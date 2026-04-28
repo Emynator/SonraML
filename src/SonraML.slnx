@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SonraML.Backend.MLX/SonraML.Backend.MLX.csproj" />
+  <Project Path="SonraML.Core/SonraML.Core.csproj" />
+</Solution>
