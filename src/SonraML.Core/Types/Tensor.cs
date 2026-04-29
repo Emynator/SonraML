@@ -288,8 +288,12 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
     public abstract void Std(bool keepDims, int ddof);
 
     public abstract void Variance(bool keepDims, int ddof);
+    
+    public abstract void Minimum(Tensor<T> other);
 
     public abstract void Min(bool keepDims);
+    
+    public abstract void Maximum(Tensor<T> other);
 
     public abstract void Max(bool keepDims);
 

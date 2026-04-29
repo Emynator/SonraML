@@ -4,18 +4,28 @@ namespace SonraML.Core.NN;
 
 public class Linear<T> : NNModule<T> where T : struct
 {
-    private readonly int featuresIn;
-    private readonly int featuresOut;
+    private readonly Tensor<T> weights;
+    private readonly Tensor<T> biases;
 
-    public Linear(int featuresIn, int featuresOut)
+    public Linear(int dimensions, int features)
     {
-        this.featuresIn = featuresIn;
-        this.featuresOut = featuresOut;
+        var weightShape = new TensorShape([dimensions, features]);
+        var weightArray = new T[weightShape.Size];
+        weights = Tf.Create(weightArray.AsMemory(), weightShape);
+        
+        var biasesShape = new TensorShape([dimensions]);
+        var biasesArray = new T[biasesShape.Size];
+        biases = Tf.Create(biasesArray.AsMemory(), biasesShape);
     }
-    
-    public override Tensor<T> Forward(Tensor<T> x)
+
+    public override void Dispose()
     {
-        // TODO
-        throw new NotImplementedException();
+        weights.Dispose();
+        biases.Dispose();
+    }
+
+    public override void Forward(Tensor<T> x)
+    {
+        x.Fma(weights, biases);
     }
 }

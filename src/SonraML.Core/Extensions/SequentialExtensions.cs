@@ -6,14 +6,14 @@ public static class SequentialExtensions
 {
     public static Sequential<T> AddReLU<T>(this Sequential<T> container) where T : struct
     {
-        container.Append(new ReLU<T>());
+        container.Add(new ReLU<T>());
 
         return container;
     }
 
     public static Sequential<T> AddSigmoid<T>(this Sequential<T> container) where T : struct
     {
-        container.Append(new Sigmoid<T>());
+        container.Add(new Sigmoid<T>());
         
         return container;
     }
@@ -21,11 +21,11 @@ public static class SequentialExtensions
     public static Sequential<T> AddLinear<T>
         (
         this Sequential<T> container,
-        int featuresIn,
-        int featuresOut
+        int dimensions,
+        int features
         ) where T : struct
     {
-        container.Append(new Linear<T>(featuresIn, featuresOut));
+        container.Add(new Linear<T>(dimensions, features));
         
         return container;
     }

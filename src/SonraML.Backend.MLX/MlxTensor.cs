@@ -604,9 +604,29 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         MlxOps.Var(in array.Array, array.Array, keepDims, ddof, Stream);
     }
 
+    public override void Minimum(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+        
+        MlxOps.Minimum(in array.Array, array.Array, o.array.Array, Stream);
+    }
+
     public override void Min(bool keepDims)
     {
         MlxOps.Min(in array.Array, array.Array, keepDims, Stream);
+    }
+
+    public override void Maximum(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+        
+        MlxOps.Maximum(in array.Array, array.Array, o.array.Array, Stream);
     }
 
     public override void Max(bool keepDims)
