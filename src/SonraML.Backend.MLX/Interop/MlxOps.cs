@@ -209,8 +209,8 @@ internal static unsafe partial class MlxOps
     [LibraryImport("mlxc", EntryPoint = "mlx_argsort")]
     public static partial int ArgSort(ref readonly MlxArray res, MlxArray a, MlxStream s);
 
-    [LibraryImport("mlxc", EntryPoint = "MlxArray_equal")]
-    public static partial int MlxArrayEqual
+    [LibraryImport("mlxc", EntryPoint = "mlx_array_equal")]
+    public static partial int ArrayEqual
         (
         ref readonly MlxArray res,
         MlxArray a,

@@ -1,8 +1,9 @@
+using SonraML.Core.Enums;
 using SonraML.Core.Exceptions;
 
 namespace SonraML.Core;
 
-public static class SonraML
+public static class SonraMLConfig
 {
     private static SonraMLBackend? backend;
 
@@ -11,6 +12,16 @@ public static class SonraML
     public static void AddBackend(SonraMLBackend b)
     {
         backend = b;
+    }
+
+    public static void Init(BackendDeviceType type)
+    {
+        if (backend is null)
+        {
+            throw new MissingBackendException();
+        }
+        
+        backend.Init(type);
     }
 
     public static void Shutdown()

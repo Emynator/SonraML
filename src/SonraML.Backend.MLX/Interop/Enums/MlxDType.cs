@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using SonraML.Core.Exceptions;
 
 namespace SonraML.Backend.MLX.Interop.Enums;
 
@@ -88,5 +89,70 @@ internal static partial class MlxDType
         }
 
         return null;
+    }
+
+    public static DType GetDTypeValid<T>()
+    {
+        if (typeof(T) == typeof(bool))
+        {
+            return DType.Bool;
+        }
+        
+        if (typeof(T) == typeof(byte))
+        {
+            return DType.UInt8;
+        }
+        
+        if (typeof(T) == typeof(ushort))
+        {
+            return DType.UInt16;
+        }
+        
+        if (typeof(T) == typeof(uint))
+        {
+            return DType.UInt32;
+        }
+        
+        if (typeof(T) == typeof(ulong))
+        {
+            return DType.UInt64;
+        }
+        
+        if (typeof(T) == typeof(sbyte))
+        {
+            return DType.Int8;
+        }
+        
+        if (typeof(T) == typeof(short))
+        {
+            return DType.Int16;
+        }
+        
+        if (typeof(T) == typeof(int))
+        {
+            return DType.Int32;
+        }
+        
+        if (typeof(T) == typeof(long))
+        {
+            return DType.Int64;
+        }
+        
+        if (typeof(T) == typeof(Half))
+        {
+            return DType.Float16;
+        }
+        
+        if (typeof(T) == typeof(float))
+        {
+            return DType.Float32;
+        }
+        
+        if (typeof(T) == typeof(double))
+        {
+            return DType.Float64;
+        }
+
+        throw new BackendOperationException("DType was invalid.");
     }
 }

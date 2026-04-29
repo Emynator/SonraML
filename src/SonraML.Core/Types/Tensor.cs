@@ -5,64 +5,66 @@ namespace SonraML.Core.Types;
 
 public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable, IEnumerable<T> where T : struct
 {
+    protected TensorShape? shape;
+    
     #region StaticCtors
 
     public static Tensor<T> Zero(TensorShape shape)
     {
-        if (!SonraML.Backend.TensorFactory.IsTypeSupported(typeof(T)))
+        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraML.Backend.TensorFactory.Zero<T>(shape);
+        return SonraMLConfig.Backend.TensorFactory.Zero<T>(shape);
     }
 
     public static Tensor<T> One(TensorShape shape)
     {
-        if (!SonraML.Backend.TensorFactory.IsTypeSupported(typeof(T)))
+        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraML.Backend.TensorFactory.One<T>(shape);
+        return SonraMLConfig.Backend.TensorFactory.One<T>(shape);
     }
 
-    public static Tensor<T> FromSpan(Span<T> span, TensorShape shape)
+    public static Tensor<T> FromMemory(Memory<T> memory, TensorShape shape)
     {
-        if (!SonraML.Backend.TensorFactory.IsTypeSupported(typeof(T)))
+        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
-        
-        return SonraML.Backend.TensorFactory.Create(span, shape);
+
+        return SonraMLConfig.Backend.TensorFactory.Create(memory, shape);
     }
 
     public static Tensor<T> FromEnumerable(IEnumerable<T> enumerable, TensorShape shape)
     {
-        return FromSpan(enumerable.ToArray().AsSpan(), shape); 
+        return FromMemory(enumerable.ToArray().AsMemory(), shape);
     }
 
     public static Tensor<T> FromScalar(T scalar)
     {
-        if (!SonraML.Backend.TensorFactory.IsTypeSupported(typeof(T)))
+        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraML.Backend.TensorFactory.Create(scalar);
+        return SonraMLConfig.Backend.TensorFactory.Create(scalar);
     }
 
     #endregion
 
     #region Properties
 
-    public abstract TensorShape Shape { get; protected set; }
-    
+    public virtual TensorShape Shape => shape ?? throw new InvalidOperationException("Shape is not set."); 
+
     public int Size => Shape.Size;
-    
+
     public int Dimensions => Shape.Dimensions;
 
-    public abstract bool IsScalar { get; protected set; }
+    public bool IsScalar { get; protected set; }
 
     #endregion
 
@@ -93,7 +95,7 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
         }
 
         using var t = Equal(other);
-        
+
         return t.All(f => f);
     }
 
@@ -140,7 +142,20 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public abstract Tensor<TTarget> ConvertTo<TTarget>() where TTarget : struct;
 
-    public abstract void CopyTo(Span<T> destination);
+    public virtual void CopyTo(Span<T> destination)
+    {
+        if (destination.Length < Shape.Size)
+        {
+            throw new ArgumentOutOfRangeException(nameof(destination), "Destination is too small for this tensor.");
+        }
+
+        using var enumerator = GetEnumerator();
+        for (var i = 0; i < Shape.Size; i++)
+        {
+            destination[i] = enumerator.Current;
+            enumerator.MoveNext();
+        }
+    }
 
     #endregion
 
@@ -153,8 +168,10 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
     public abstract void Mul(Tensor<T> other);
 
     public abstract void Div(Tensor<T> other);
-
-    public abstract void Fma(Tensor<T> toAdd, Tensor<T> toMul);
+    
+    public abstract void Mod(Tensor<T> other);
+    
+    public abstract void Fma(Tensor<T> toMul, Tensor<T> toAdd, float scaleProd = 1.0f, float scaleAdd = 1.0f);
 
     public abstract void Neg();
 
@@ -174,17 +191,9 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public abstract Tensor<bool> Or(Tensor<T> other);
 
-    public abstract void MatAdd(Tensor<T> other);
-
-    public abstract void MatSub(Tensor<T> other);
+    public abstract Tensor<bool> Not();
 
     public abstract void MatMul(Tensor<T> other);
-
-    public abstract void MatDiv(Tensor<T> other);
-
-    public abstract void MatFma(Tensor<T> toMul, Tensor<T> toAdd);
-
-    public abstract void Not();
 
     public abstract void Exp();
 
@@ -194,7 +203,7 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public abstract void Sin();
 
-    public abstract void Sinh();
+    public abstract void SinH();
 
     public abstract void ArcSin();
 
@@ -202,7 +211,7 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public abstract void Cos();
 
-    public abstract void Cosh();
+    public abstract void CosH();
 
     public abstract void ArcCos();
 
@@ -210,27 +219,27 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public abstract void Tan();
 
-    public abstract void Tanh();
+    public abstract void TanH();
 
     public abstract void ArcTan();
 
-    public abstract void ArcTan2();
-
     public abstract void ArcTanH();
+
+    public abstract void ArcTan2(Tensor<T> other);
 
     public abstract void Clip(T min, T max);
 
-    public abstract void Sum();
+    public abstract void Sum(bool keepDims);
 
-    public abstract void Mean();
+    public abstract void Mean(bool keepDims);
 
-    public abstract void Std();
+    public abstract void Std(bool keepDims, int ddof);
 
-    public abstract void Variance();
+    public abstract void Variance(bool keepDims, int ddof);
 
-    public abstract void Min();
+    public abstract void Min(bool keepDims);
 
-    public abstract void Max();
+    public abstract void Max(bool keepDims);
 
     #endregion
 
@@ -254,6 +263,11 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
     public void operator /= (Tensor<T> rhs)
     {
         Div(rhs);
+    }
+
+    public void operator %= (Tensor<T> rhs)
+    {
+        Mod(rhs);
     }
 
     public static Tensor<T> operator +(Tensor<T> lhs, Tensor<T> rhs)
@@ -288,6 +302,14 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
         return result;
     }
 
+    public static Tensor<T> operator %(Tensor<T> lhs, Tensor<T> rhs)
+    {
+        var result = lhs.Copy();
+        result.Mod(rhs);
+        
+        return result;
+    }
+
     public static bool operator ==(Tensor<T> lhs, Tensor<T> rhs)
     {
         return lhs.Equals(rhs);
@@ -296,6 +318,26 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
     public static bool operator !=(Tensor<T> lhs, Tensor<T> rhs)
     {
         return !lhs.Equals(rhs);
+    }
+
+    public static bool operator <(Tensor<T> lhs, Tensor<T> rhs)
+    {
+        return lhs.Shape.CompareTo(rhs.Shape) < 0;
+    }
+
+    public static bool operator >(Tensor<T> lhs, Tensor<T> rhs)
+    {
+        return lhs.Shape.CompareTo(rhs.Shape) > 0;
+    }
+
+    public static bool operator <=(Tensor<T> lhs, Tensor<T> rhs)
+    {
+        return lhs.Shape.CompareTo(rhs.Shape) <= 0;
+    }
+
+    public static bool operator >=(Tensor<T> lhs, Tensor<T> rhs)
+    {
+        return lhs.Shape.CompareTo(rhs.Shape) >= 0;
     }
 
     #endregion

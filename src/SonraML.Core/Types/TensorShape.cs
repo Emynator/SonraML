@@ -2,16 +2,16 @@ namespace SonraML.Core.Types;
 
 public class TensorShape : IEquatable<TensorShape>, IComparable<TensorShape>
 {
-    private readonly int[] shape;
-
     public TensorShape(int[] shape)
     {
-        this.shape = shape;
+        Shape = shape;
     }
     
-    public int Size => shape.Sum();
+    public int[] Shape { get; init; }
     
-    public int Dimensions => shape.Length;
+    public int Size => Shape.Sum();
+    
+    public int Dimensions => Shape.Length;
 
     public bool Equals(TensorShape? other)
     {
@@ -40,6 +40,6 @@ public class TensorShape : IEquatable<TensorShape>, IComparable<TensorShape>
     
     public override int GetHashCode()
     {
-        return shape.GetHashCode();
+        return Shape.GetHashCode();
     }
 }
