@@ -56,7 +56,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_ifft")]
-    public static partial int IntFft
+    public static partial int InvFft
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -67,7 +67,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_ifft2")]
-    public static partial int IntFft2
+    public static partial int InvFft2
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -80,7 +80,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_ifftn")]
-    public static partial int IntFftN
+    public static partial int InvFftN
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -93,7 +93,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_ifftshift")]
-    public static partial int IntFftShift
+    public static partial int InvFftShift
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -103,7 +103,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_irfft")]
-    public static partial int IntRFft
+    public static partial int InvRealFft
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -114,7 +114,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_irfft2")]
-    public static partial int IntRFft2
+    public static partial int InvRealFft2
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -127,7 +127,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_irfftn")]
-    public static partial int IntRFftN
+    public static partial int InvRealFftN
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -140,7 +140,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_rfft")]
-    public static partial int RFft
+    public static partial int RealFft
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -151,7 +151,7 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_rfft2")]
-    public static partial int RFft2
+    public static partial int RealFft2
         (
         ref readonly MlxArray res,
         MlxArray a,
@@ -164,10 +164,10 @@ internal static unsafe partial class MlxFft
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_rfftfreq")]
-    public static partial int RFftFreq(ref readonly MlxArray res, int n, double d, MlxStream s);
+    public static partial int RealFftFreq(ref readonly MlxArray res, int n, double d, MlxStream s);
 
     [LibraryImport("mlxc", EntryPoint = "mlx_fft_rfftn")]
-    public static partial int RFftN
+    public static partial int RealFftN
         (
         ref readonly MlxArray res,
         MlxArray a,
