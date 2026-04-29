@@ -3,7 +3,7 @@ using SonraML.Core.Exceptions;
 
 namespace SonraML.Core;
 
-public static class SonraMLConfig
+public static class SonraMLConfiguration
 {
     private static SonraMLBackend? backend;
 

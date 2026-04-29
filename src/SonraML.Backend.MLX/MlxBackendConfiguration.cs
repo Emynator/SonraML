@@ -2,10 +2,10 @@ using SonraML.Core;
 
 namespace SonraML.Backend.MLX;
 
-public static class MlxBackendConfig
+public static class MlxBackendConfiguration
 {
     public static void AddMlxBackend()
     {
-        SonraMLConfig.AddBackend(new MlxBackend());
+        SonraMLConfiguration.AddBackend(new MlxBackend());
     }
 }

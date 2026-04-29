@@ -11,29 +11,29 @@ internal class MlxTensorFactory : ITensorFactory
         return MlxDType.GetDType<T>() is not null;
     }
 
-    public Tensor<T> Zero<T>(TensorShape shape) where T : struct
+    public Tensor<T> Zero<T>(TensorShape shape, string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(shape);
+        var result = new MlxTensor<T>(shape, name);
         result.SetZero();
         
         return result;
     }
 
-    public Tensor<T> One<T>(TensorShape shape) where T : struct
+    public Tensor<T> One<T>(TensorShape shape, string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(shape);
+        var result = new MlxTensor<T>(shape, name);
         result.SetOne();
         
         return result;
     }
 
-    public Tensor<T> Create<T>(T scalar) where T : struct
+    public Tensor<T> Create<T>(T scalar, string? name = null) where T : struct
     {
-        return new MlxTensor<T>(scalar);
+        return new MlxTensor<T>(scalar, name);
     }
 
-    public Tensor<T> Create<T>(Memory<T> array, TensorShape shape) where T : struct
+    public Tensor<T> Create<T>(Memory<T> array, TensorShape shape, string? name = null) where T : struct
     {
-        return new MlxTensor<T>(array, shape);
+        return new MlxTensor<T>(array, shape, name);
     }
 }

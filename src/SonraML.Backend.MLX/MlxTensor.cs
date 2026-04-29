@@ -13,26 +13,35 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
 
     #region Ctors
 
-    private MlxTensor()
+    private MlxTensor(string? name = null)
     {
         array = new ManagedMlxArray<T>();
+        Name = name ?? "";
+        Type = typeof(T);
     }
 
-    internal MlxTensor(TensorShape shape)
+    internal MlxTensor(TensorShape shape, string? name = null)
     {
         array = new ManagedMlxArray<T>();
         this.shape = shape;
+        Name = name ?? "";
+        Type = typeof(T);
+        IsScalar = shape.Dimensions == 0;
     }
 
-    internal MlxTensor(Memory<T> array, TensorShape shape)
+    internal MlxTensor(Memory<T> array, TensorShape shape, string? name = null)
     {
         this.array = new ManagedMlxArray<T>(array, shape);
+        Name = name ?? "";
+        Type = typeof(T);
         IsScalar = false;
     }
 
-    internal MlxTensor(T scalar)
+    internal MlxTensor(T scalar, string? name = null)
     {
         array = new ManagedMlxArray<T>(scalar);
+        Name = name ?? "";
+        Type = typeof(T);
         IsScalar = true;
     }
 

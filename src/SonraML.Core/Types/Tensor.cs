@@ -3,7 +3,7 @@ using SonraML.Core.Exceptions;
 
 namespace SonraML.Core.Types;
 
-public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable, IEnumerable<T> where T : struct
+public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<T>>, ICloneable, IEnumerable<T> where T : struct
 {
     protected TensorShape? shape;
     
@@ -11,32 +11,32 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public static Tensor<T> Zero(TensorShape shape)
     {
-        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
+        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraMLConfig.Backend.TensorFactory.Zero<T>(shape);
+        return SonraMLConfiguration.Backend.TensorFactory.Zero<T>(shape);
     }
 
     public static Tensor<T> One(TensorShape shape)
     {
-        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
+        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraMLConfig.Backend.TensorFactory.One<T>(shape);
+        return SonraMLConfiguration.Backend.TensorFactory.One<T>(shape);
     }
 
     public static Tensor<T> FromMemory(Memory<T> memory, TensorShape shape)
     {
-        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
+        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraMLConfig.Backend.TensorFactory.Create(memory, shape);
+        return SonraMLConfiguration.Backend.TensorFactory.Create(memory, shape);
     }
 
     public static Tensor<T> FromEnumerable(IEnumerable<T> enumerable, TensorShape shape)
@@ -46,19 +46,19 @@ public abstract class Tensor<T> : IDisposable, IEquatable<Tensor<T>>, ICloneable
 
     public static Tensor<T> FromScalar(T scalar)
     {
-        if (!SonraMLConfig.Backend.TensorFactory.IsTypeSupported<T>())
+        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
         {
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        return SonraMLConfig.Backend.TensorFactory.Create(scalar);
+        return SonraMLConfiguration.Backend.TensorFactory.Create(scalar);
     }
 
     #endregion
 
     #region Properties
 
-    public virtual TensorShape Shape => shape ?? throw new InvalidOperationException("Shape is not set."); 
+    public override TensorShape Shape => shape ?? throw new InvalidOperationException("Shape is not set."); 
 
     public int Size => Shape.Size;
 

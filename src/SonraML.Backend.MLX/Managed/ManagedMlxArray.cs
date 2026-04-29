@@ -22,73 +22,73 @@ internal unsafe class ManagedMlxArray<T> : IDisposable where T : struct
         
         if (typeof(T) == typeof(bool))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Bool);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Bool);
             return;
         }
 
         if (typeof(T) == typeof(byte))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt8);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt8);
             return;
         }
 
         if (typeof(T) == typeof(ushort))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt16);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt16);
             return;
         }
 
         if (typeof(T) == typeof(uint))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt32);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt32);
             return;
         }
 
         if (typeof(T) == typeof(ulong))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt64);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt64);
             return;
         }
 
         if (typeof(T) == typeof(sbyte))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int8);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int8);
             return;
         }
 
         if (typeof(T) == typeof(short))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int16);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int16);
             return;
         }
 
         if (typeof(T) == typeof(int))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int32);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int32);
             return;
         }
 
         if (typeof(T) == typeof(long))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int64);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int64);
             return;
         }
 
         if (typeof(T) == typeof(Half))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float16);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float16);
             return;
         }
 
         if (typeof(T) == typeof(float))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float32);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float32);
             return;
         }
 
         if (typeof(T) == typeof(double))
         {
-            MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float64);
+            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float64);
             return;
         }
         
