@@ -20,6 +20,14 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         Type = typeof(T);
     }
 
+    public MlxTensor(bool isZero, string? name = null)
+    {
+        array = new ManagedMlxArray<T>(isZero);
+        Name = name ?? "";
+        Type = typeof(T);
+        IsScalar = true;
+    }
+
     internal MlxTensor(TensorShape shape, string? name = null)
     {
         array = new ManagedMlxArray<T>();
@@ -154,6 +162,8 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     #endregion
 
     #region TensorOps
+    
+    #region ArithmeticOps
 
     public override void Add(Tensor<T> other)
     {
@@ -183,6 +193,16 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         MlxOps.Multiply(in array.Array, array.Array, o.array.Array, Stream);
+    }
+    
+    public override void MatMul(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+
+        MlxOps.MatMul(in array.Array, array.Array, o.array.Array, Stream);
     }
 
     public override void Div(Tensor<T> other)
@@ -237,6 +257,10 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     {
         MlxOps.Negative(in array.Array, array.Array, Stream);
     }
+    
+    #endregion
+    
+    #region LogicalOps
 
     public override Tensor<bool> Equal(Tensor<T> other)
     {
@@ -358,16 +382,49 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
 
         return result;
     }
+    
+    #endregion
 
-    public override void MatMul(Tensor<T> other)
+    #region BitwiseOps
+
+    public override void BitwiseAnd(Tensor<T> other)
     {
         if (other is not MlxTensor<T> o)
         {
             throw new TensorCompatibilityException();
         }
-
-        MlxOps.MatMul(in array.Array, array.Array, o.array.Array, Stream);
+        
+        MlxOps.BitwiseAnd(in array.Array, array.Array, o.array.Array, Stream);
     }
+
+    public override void BitwiseOr(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+        
+        MlxOps.BitwiseOr(in array.Array, array.Array, o.array.Array, Stream);
+    }
+
+    public override void BitwiseXor(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+        
+        MlxOps.BitwiseXor(in array.Array, array.Array, o.array.Array, Stream);
+    }
+
+    public override void BitwiseNot()
+    {
+        MlxOps.BitwiseInvert(in array.Array, array.Array, Stream);
+    }
+    
+    #endregion
+    
+    #region ExponentialOps
 
     public override void Exp()
     {
@@ -379,10 +436,49 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         MlxOps.Log(in array.Array, array.Array, Stream);
     }
 
-    public override void Abs()
+    public override void Log10()
     {
-        MlxOps.Abs(in array.Array, array.Array, Stream);
+        MlxOps.Log10(in array.Array, array.Array, Stream);
     }
+
+    public override void Log2()
+    {
+        MlxOps.Log2(in array.Array, array.Array, Stream);
+    }
+
+    public override void Log1P()
+    {
+        MlxOps.Log1P(in array.Array, array.Array, Stream);
+    }
+
+    public override void Square()
+    {
+        MlxOps.Square(in array.Array, array.Array, Stream);
+    }
+
+    public override void Sqrt()
+    {
+        MlxOps.Sqrt(in array.Array, array.Array, Stream);
+    }
+
+    public override void RSqrt()
+    {
+        MlxOps.RSqrt(in array.Array, array.Array, Stream);
+    }
+
+    public override void Pow(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+        
+        MlxOps.Power(in array.Array, array.Array, o.array.Array, Stream);
+    }
+    
+    #endregion
+    
+    #region TrigonometricOps
 
     public override void Sin()
     {
@@ -453,6 +549,25 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
 
         MlxOps.ArcTan2(in array.Array, array.Array, o.array.Array, Stream);
     }
+    
+    #endregion
+    
+    #region Rounding
+
+    public override void Floor()
+    {
+        MlxOps.Floor(in array.Array, array.Array, Stream);
+    }
+
+    public override void Round(int decimals)
+    {
+        MlxOps.Round(in array.Array, array.Array, decimals, Stream);
+    }
+
+    public override void Ceil()
+    {
+        MlxOps.Ceil(in array.Array, array.Array, Stream);
+    }
 
     public override void Clip(T min, T max)
     {
@@ -460,6 +575,13 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         using var sMax = new ManagedMlxArray<T>(max);
 
         MlxOps.Clip(in array.Array, array.Array, sMin.Array, sMax.Array, Stream);
+    }
+    
+    #endregion
+    
+    public override void Abs()
+    {
+        MlxOps.Abs(in array.Array, array.Array, Stream);
     }
 
     public override void Sum(bool keepDims)
@@ -491,6 +613,25 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     {
         MlxOps.Max(in array.Array, array.Array, keepDims, Stream);
     }
+    
+    #region SpecialOps
+
+    public override void Sigmoid()
+    {
+        MlxOps.Sigmoid(in array.Array, array.Array, Stream);
+    }
+
+    public override void Softmax()
+    {
+        MlxOps.Softmax(in array.Array, array.Array, true, Stream);
+    }
+
+    public override void TopK(int k)
+    {
+        MlxOps.TopK(in array.Array, array.Array, k, Stream);
+    }
+    
+    #endregion
 
     #endregion
 }

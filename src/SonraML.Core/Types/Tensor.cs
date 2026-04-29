@@ -161,11 +161,15 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
 
     #region TensorOps
 
+    #region ArithmeticOps
+    
     public abstract void Add(Tensor<T> other);
 
     public abstract void Sub(Tensor<T> other);
 
     public abstract void Mul(Tensor<T> other);
+    
+    public abstract void MatMul(Tensor<T> other);
 
     public abstract void Div(Tensor<T> other);
     
@@ -174,6 +178,10 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
     public abstract void Fma(Tensor<T> toMul, Tensor<T> toAdd, float scaleProd = 1.0f, float scaleAdd = 1.0f);
 
     public abstract void Neg();
+    
+    #endregion
+    
+    #region LogicalOps
 
     public abstract Tensor<bool> Equal(Tensor<T> other);
 
@@ -192,14 +200,44 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
     public abstract Tensor<bool> Or(Tensor<T> other);
 
     public abstract Tensor<bool> Not();
+    
+    #endregion
 
-    public abstract void MatMul(Tensor<T> other);
+    #region BitwiseOps
+
+    public abstract void BitwiseAnd(Tensor<T> other);
+    
+    public abstract void BitwiseOr(Tensor<T> other);
+    
+    public abstract void BitwiseXor(Tensor<T> other);
+
+    public abstract void BitwiseNot();
+
+    #endregion
+    
+    #region ExponentialOps
 
     public abstract void Exp();
 
     public abstract void Log();
 
-    public abstract void Abs();
+    public abstract void Log10();
+
+    public abstract void Log2();
+
+    public abstract void Log1P();
+
+    public abstract void Square();
+
+    public abstract void Sqrt();
+
+    public abstract void RSqrt();
+    
+    public abstract void Pow(Tensor<T> other);
+    
+    #endregion
+    
+    #region TrigonometricOps
 
     public abstract void Sin();
 
@@ -226,8 +264,22 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
     public abstract void ArcTanH();
 
     public abstract void ArcTan2(Tensor<T> other);
+    
+    #endregion
+    
+    #region Rounding
+
+    public abstract void Floor();
+    
+    public abstract void Round(int decimals);
+    
+    public abstract void Ceil();
 
     public abstract void Clip(T min, T max);
+
+    #endregion
+
+    public abstract void Abs();
 
     public abstract void Sum(bool keepDims);
 
@@ -240,6 +292,16 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
     public abstract void Min(bool keepDims);
 
     public abstract void Max(bool keepDims);
+
+    #region SpecialOps
+
+    public abstract void Sigmoid();
+
+    public abstract void Softmax();
+
+    public abstract void TopK(int k);
+
+    #endregion
 
     #endregion
 

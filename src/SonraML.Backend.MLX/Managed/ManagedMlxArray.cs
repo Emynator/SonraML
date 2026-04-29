@@ -171,6 +171,94 @@ internal unsafe class ManagedMlxArray<T> : IDisposable where T : struct
         
         throw new TensorTypeNotSupportedException(typeof(T));
     }
+    
+    public ManagedMlxArray(bool isZero)
+    {
+        if (typeof(T) == typeof(bool))
+        {
+            Array = MlxArray.NewBool(isZero);
+            return;
+        }
+
+        if (typeof(T) == typeof(byte))
+        {
+            byte value = (byte)(isZero ? 0 : 1);
+            Array = MlxArray.NewData(&value, null, 0, DType.UInt8);
+            return;
+        }
+
+        if (typeof(T) == typeof(ushort))
+        {
+            ushort value = (ushort)(isZero ? 0 : 1);
+            Array = MlxArray.NewData(&value, null, 0, DType.UInt16);
+            return;
+        }
+
+        if (typeof(T) == typeof(uint))
+        {
+            uint value = (uint)(isZero ? 0 : 1);
+            Array = MlxArray.NewData(&value, null, 0, DType.UInt32);
+            return;
+        }
+
+        if (typeof(T) == typeof(ulong))
+        {
+            ulong value = (ulong)(isZero ? 0 : 1);
+            Array = MlxArray.NewData(&value, null, 0, DType.UInt64);
+            return;
+        }
+
+        if (typeof(T) == typeof(sbyte))
+        {
+            sbyte value = (sbyte)(isZero ? 0 : 1);
+            Array = MlxArray.NewData(&value, null, 0, DType.Int8);
+            return;
+        }
+
+        if (typeof(T) == typeof(short))
+        {
+            short value = (short)(isZero ? 0 : 1);
+            Array = MlxArray.NewData(&value, null, 0, DType.Int16);
+            return;
+        }
+
+        if (typeof(T) == typeof(int))
+        {
+            var value = isZero ? 0 : 1;
+            Array = MlxArray.NewInt(value);
+            return;
+        }
+
+        if (typeof(T) == typeof(long))
+        {
+            long value = isZero ? 0 : 1;
+            Array = MlxArray.NewData(&value, null, 0, DType.Int64);
+            return;
+        }
+
+        if (typeof(T) == typeof(Half))
+        {
+            Half value = (Half)(isZero ? 0.0f : 1.0f);
+            Array = MlxArray.NewData(&value, null, 0, DType.Float16);
+            return;
+        }
+
+        if (typeof(T) == typeof(float))
+        {
+            float value = isZero ? 0.0f : 1.0f;
+            Array = MlxArray.NewFloat32(value);
+            return;
+        }
+
+        if (typeof(T) == typeof(double))
+        {
+            double value = isZero ? 0.0d : 1.0d;
+            Array = MlxArray.NewFloat64(value);
+            return;
+        }
+        
+        throw new TensorTypeNotSupportedException(typeof(T));
+    }
 
     public void Dispose()
     {

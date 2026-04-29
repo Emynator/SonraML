@@ -10,6 +10,10 @@ public interface ITensorFactory
 
     public Tensor<T> One<T>(TensorShape shape, string? name = null) where T : struct;
     
+    public Tensor<T> ScalarZero<T>(string? name = null) where T : struct;
+    
+    public Tensor<T> ScalarOne<T>(string? name = null) where T : struct;
+    
     public Tensor<T> Create<T>(T scalar, string? name = null) where T : struct;
     
     public Tensor<T> Create<T>(Memory<T> array, TensorShape shape, string? name = null) where T : struct;

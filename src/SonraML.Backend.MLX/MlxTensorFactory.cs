@@ -27,6 +27,16 @@ internal class MlxTensorFactory : ITensorFactory
         return result;
     }
 
+    public Tensor<T> ScalarZero<T>(string? name = null) where T : struct
+    {
+        return new MlxTensor<T>(true, name);
+    }
+
+    public Tensor<T> ScalarOne<T>(string? name = null) where T : struct
+    {
+        return new MlxTensor<T>(false, name);
+    }
+
     public Tensor<T> Create<T>(T scalar, string? name = null) where T : struct
     {
         return new MlxTensor<T>(scalar, name);
