@@ -1,6 +1,7 @@
 using SonraML.Backend.MLX.Interfaces;
 using SonraML.Core;
 using SonraML.Core.Enums;
+using SonraML.Core.Interfaces;
 
 namespace SonraML.Backend.MLX.Implementations;
 
@@ -15,11 +16,10 @@ internal class MlxBackend : ISonraMLBackend
 
     public void Init(BackendDeviceType type)
     {
-        globals.Stream = new(type);
+        globals.DeviceType = type;
     }
 
     public void Dispose()
     {
-        globals.Stream?.Dispose();
     }
 }

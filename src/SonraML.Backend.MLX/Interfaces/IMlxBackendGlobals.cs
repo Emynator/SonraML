@@ -1,8 +1,9 @@
 using SonraML.Backend.MLX.Managed;
+using SonraML.Core.Enums;
 
 namespace SonraML.Backend.MLX.Interfaces;
 
 internal interface IMlxBackendGlobals
 {
-    public ManagedMlxStream? Stream { get; set; }
+    public BackendDeviceType DeviceType { get; set; }
 }

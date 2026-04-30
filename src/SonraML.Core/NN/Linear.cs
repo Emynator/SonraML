@@ -6,11 +6,11 @@ namespace SonraML.Core.NN;
 public class Linear<T> : NNModule<T> where T : struct
 {
     private readonly IGlobalTensorFactory gtf;
-    private readonly ITensorFactory tf;
+    private readonly IScopedTensorFactory tf;
     private readonly Tensor<T> weights;
     private readonly Tensor<T> biases;
 
-    public Linear(IGlobalTensorFactory gtf, ITensorFactory tf, int inputFeatures, int outputFeatures)
+    public Linear(IGlobalTensorFactory gtf, IScopedTensorFactory tf, int inputFeatures, int outputFeatures)
     {
         this.gtf = gtf;
         this.tf = tf;

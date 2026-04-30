@@ -1,6 +1,6 @@
 using SonraML.Core.Enums;
 
-namespace SonraML.Core;
+namespace SonraML.Core.Interfaces;
 
 public interface ISonraMLBackend : IDisposable
 {

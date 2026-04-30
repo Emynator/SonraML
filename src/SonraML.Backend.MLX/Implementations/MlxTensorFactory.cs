@@ -1,7 +1,6 @@
 using SonraML.Backend.MLX.Interfaces;
-using SonraML.Backend.MLX.Interop;
 using SonraML.Backend.MLX.Interop.Enums;
-using SonraML.Core.Exceptions;
+using SonraML.Backend.MLX.Managed;
 using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
 
@@ -9,12 +8,12 @@ namespace SonraML.Backend.MLX.Implementations;
 
 internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 {
-    private readonly MlxStream stream;
+    private readonly ManagedMlxStream stream;
     private readonly List<GenericTensor> tensors = [];
 
     public MlxTensorFactory(IMlxBackendGlobals globals)
     {
-        stream = globals.Stream?.Stream ?? throw new BackendNotInitializedException();
+        stream = new ManagedMlxStream(globals.DeviceType);
     }
     
     public void Dispose()
@@ -32,7 +31,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     public Tensor<T> Zero<T>(TensorShape shape, string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, shape, name);
+        var result = new MlxTensor<T>(this, stream.Stream, shape, name);
         tensors.Add(result);
         
         result.SetZero();
@@ -42,7 +41,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     public Tensor<T> One<T>(TensorShape shape, string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, shape, name);
+        var result = new MlxTensor<T>(this, stream.Stream, shape, name);
         tensors.Add(result);
         
         result.SetOne();
@@ -52,7 +51,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     public Tensor<T> ScalarZero<T>(string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, true, name);
+        var result = new MlxTensor<T>(this, stream.Stream, true, name);
         tensors.Add(result);
 
         return result;
@@ -60,7 +59,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     public Tensor<T> ScalarOne<T>(string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, false, name);
+        var result = new MlxTensor<T>(this, stream.Stream, false, name);
         tensors.Add(result);
         
         return result;
@@ -68,7 +67,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     public Tensor<T> Create<T>(T scalar, string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, scalar, name);
+        var result = new MlxTensor<T>(this, stream.Stream, scalar, name);
         tensors.Add(result);
         
         return result;
@@ -76,7 +75,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     public Tensor<T> Create<T>(Memory<T> array, TensorShape shape, string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, array, shape, name);
+        var result = new MlxTensor<T>(this, stream.Stream, array, shape, name);
         tensors.Add(result);
         
         return result;
@@ -84,7 +83,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 
     internal MlxTensor<T> CreateEmpty<T>(string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream, name);
+        var result = new MlxTensor<T>(this, stream.Stream, name);
         tensors.Add(result);
         
         return result;

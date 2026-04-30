@@ -128,6 +128,16 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         return result;
     }
 
+    public override void CopyFrom(Tensor<T> other)
+    {
+        if (other is not MlxTensor<T> o)
+        {
+            throw new TensorCompatibilityException();
+        }
+        
+        array.CopyFrom(o.array);
+    }
+
     public override Tensor<TTarget> ConvertTo<TTarget>()
     {
         var dtype = MlxDType.GetDType<TTarget>();

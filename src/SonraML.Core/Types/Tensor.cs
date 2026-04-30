@@ -88,6 +88,8 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
         return result ?? throw new BackendOperationException("Expected cloning to return a Tensor<T>.");
     }
+    
+    public abstract void CopyFrom(Tensor<T> other);
 
     public abstract Tensor<TTarget> ConvertTo<TTarget>() where TTarget : struct;
 
@@ -262,22 +264,22 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
     public void operator += (Tensor<T> rhs)
     {
-        Add(rhs);
+        CopyFrom(Add(rhs));
     }
 
     public void operator -= (Tensor<T> rhs)
     {
-        Sub(rhs);
+        CopyFrom(Sub(rhs));
     }
 
     public void operator *= (Tensor<T> rhs)
     {
-        Mul(rhs);
+        CopyFrom(Mul(rhs));
     }
 
     public void operator /= (Tensor<T> rhs)
     {
-        Div(rhs);
+        CopyFrom(Div(rhs));
     }
 
     public void operator %= (Tensor<T> rhs)
@@ -287,42 +289,27 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
     public static Tensor<T> operator +(Tensor<T> lhs, Tensor<T> rhs)
     {
-        var result = lhs.Copy();
-        result.Add(rhs);
-
-        return result;
+        return lhs.Add(rhs);
     }
 
     public static Tensor<T> operator -(Tensor<T> lhs, Tensor<T> rhs)
     {
-        var result = lhs.Copy();
-        result.Sub(rhs);
-
-        return result;
+        return lhs.Sub(rhs);
     }
 
     public static Tensor<T> operator *(Tensor<T> lhs, Tensor<T> rhs)
     {
-        var result = lhs.Copy();
-        result.Mul(rhs);
-
-        return result;
+        return lhs.Mul(rhs);
     }
 
     public static Tensor<T> operator /(Tensor<T> lhs, Tensor<T> rhs)
     {
-        var result = lhs.Copy();
-        result.Div(rhs);
-
-        return result;
+        return lhs.Div(rhs);
     }
 
     public static Tensor<T> operator %(Tensor<T> lhs, Tensor<T> rhs)
     {
-        var result = lhs.Copy();
-        result.Mod(rhs);
-        
-        return result;
+        return lhs.Mod(rhs);
     }
 
     public static bool operator ==(Tensor<T> lhs, Tensor<T> rhs)
