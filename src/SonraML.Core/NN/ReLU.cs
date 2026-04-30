@@ -1,18 +1,21 @@
+using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
 public class ReLU<T> : NNModule<T> where T : struct
 {
-    private readonly Tensor<T> zero = SonraMLConfiguration.Backend.TensorFactory.ScalarZero<T>();
-    
-    public override void Dispose()
+    private readonly IScopedTensorFactory tf;
+    private readonly Tensor<T> zero;
+
+    public ReLU(IScopedTensorFactory tf)
     {
-        zero.Dispose();
+        this.tf = tf;
+        zero = tf.ScalarZero<T>();
     }
 
-    public override void Forward(Tensor<T> x)
+    public override Tensor<T> Forward(Tensor<T> x)
     {
-        x.Maximum(zero);
+        return x.Maximum(zero);
     }
 }

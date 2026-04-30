@@ -7,17 +7,19 @@ namespace SonraML.Core.IO;
 
 public class SafetensorsReader : ITensorReader, IDisposable
 {
+    private readonly ITensorFactory tf;
     private readonly BinaryReader reader;
     private readonly Dictionary<string, SafetensorsTensor> header = new();
     private readonly long dataOffset;
 
-    public SafetensorsReader(string path)
+    public SafetensorsReader(string path, ITensorFactory tf)
     {
         if (!File.Exists(path))
         {
             throw new FileNotFoundException(path);
         }
 
+        this.tf = tf;
         reader = new(File.OpenRead(path));
         var buffer = reader.ReadBytes(8);
         var headerSize = BitConverter.ToInt64(buffer);
@@ -30,8 +32,6 @@ public class SafetensorsReader : ITensorReader, IDisposable
 
         dataOffset = 8 + headerSize;
     }
-
-    private ITensorFactory Tf => SonraMLConfiguration.Backend.TensorFactory;
 
     public void Dispose()
     {
@@ -81,7 +81,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                 buffer[i] = reader.ReadSByte();
             }
 
-            return Tf.Create(buffer.AsMemory(), shape, name);
+            return tf.Create(buffer.AsMemory(), shape, name);
         }
 
         var data = reader.ReadBytes((int)length);
@@ -95,10 +95,10 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     bBuffer[i] = BitConverter.ToBoolean(data, i * typeSize);
                 }
 
-                return Tf.Create(bBuffer.AsMemory(), shape, name);
+                return tf.Create(bBuffer.AsMemory(), shape, name);
 
             case "U8":
-                return Tf.Create(data.AsMemory(), shape, name);
+                return tf.Create(data.AsMemory(), shape, name);
 
             case "U16":
                 var u16Buffer = new ushort[shape.Size];
@@ -107,7 +107,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     u16Buffer[i] = BitConverter.ToUInt16(data, i * typeSize);
                 }
 
-                return Tf.Create(u16Buffer.AsMemory(), shape, name);
+                return tf.Create(u16Buffer.AsMemory(), shape, name);
 
             case "U32":
                 var u32Buffer = new uint[shape.Size];
@@ -116,7 +116,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     u32Buffer[i] = BitConverter.ToUInt32(data, i * typeSize);
                 }
 
-                return Tf.Create(u32Buffer.AsMemory(), shape, name);
+                return tf.Create(u32Buffer.AsMemory(), shape, name);
 
             case "U64":
                 var u64Buffer = new ulong[shape.Size];
@@ -125,7 +125,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     u64Buffer[i] = BitConverter.ToUInt64(data, i * typeSize);
                 }
 
-                return Tf.Create(u64Buffer.AsMemory(), shape, name);
+                return tf.Create(u64Buffer.AsMemory(), shape, name);
 
             case "I16":
                 var i16Buffer = new short[shape.Size];
@@ -134,7 +134,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     i16Buffer[i] = BitConverter.ToInt16(data, i * typeSize);
                 }
 
-                return Tf.Create(i16Buffer.AsMemory(), shape, name);
+                return tf.Create(i16Buffer.AsMemory(), shape, name);
 
             case "I32":
                 var i32Buffer = new int[shape.Size];
@@ -143,7 +143,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     i32Buffer[i] = BitConverter.ToInt32(data, i * typeSize);
                 }
 
-                return Tf.Create(i32Buffer.AsMemory(), shape, name);
+                return tf.Create(i32Buffer.AsMemory(), shape, name);
 
             case "I64":
                 var i64Buffer = new long[shape.Size];
@@ -152,7 +152,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     i64Buffer[i] = BitConverter.ToInt64(data, i * typeSize);
                 }
 
-                return Tf.Create(i64Buffer.AsMemory(), shape, name);
+                return tf.Create(i64Buffer.AsMemory(), shape, name);
 
             case "F16":
                 var f16Buffer = new Half[shape.Size];
@@ -161,7 +161,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     f16Buffer[i] = BitConverter.ToHalf(data, i * typeSize);
                 }
 
-                return Tf.Create(f16Buffer.AsMemory(), shape, name);
+                return tf.Create(f16Buffer.AsMemory(), shape, name);
 
             case "F32":
                 var f32Buffer = new float[shape.Size];
@@ -170,7 +170,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     f32Buffer[i] = BitConverter.ToSingle(data, i * typeSize);
                 }
 
-                return Tf.Create(f32Buffer.AsMemory(), shape, name);
+                return tf.Create(f32Buffer.AsMemory(), shape, name);
 
             case "F64":
                 var f64Buffer = new double[shape.Size];
@@ -179,7 +179,7 @@ public class SafetensorsReader : ITensorReader, IDisposable
                     f64Buffer[i] = BitConverter.ToDouble(data, i * typeSize);
                 }
 
-                return Tf.Create(f64Buffer.AsMemory(), shape, name);
+                return tf.Create(f64Buffer.AsMemory(), shape, name);
         }
 
         return null;

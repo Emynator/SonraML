@@ -2,7 +2,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.Interfaces;
 
-public interface ITensorFactory
+public interface ITensorFactory : IDisposable
 {
     public bool IsTypeSupported<T>();
     
@@ -18,3 +18,7 @@ public interface ITensorFactory
     
     public Tensor<T> Create<T>(Memory<T> array, TensorShape shape, string? name = null) where T : struct;
 }
+
+public interface IGlobalTensorFactory : ITensorFactory;
+
+public interface IScopedTensorFactory : ITensorFactory;

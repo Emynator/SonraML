@@ -3,58 +3,9 @@ using SonraML.Core.Exceptions;
 
 namespace SonraML.Core.Types;
 
-public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<T>>, ICloneable, IEnumerable<T> where T : struct
+public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneable, IEnumerable<T> where T : struct
 {
     protected TensorShape? shape;
-    
-    #region StaticCtors
-
-    public static Tensor<T> Zero(TensorShape shape)
-    {
-        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
-        {
-            throw new TensorTypeNotSupportedException(typeof(T));
-        }
-
-        return SonraMLConfiguration.Backend.TensorFactory.Zero<T>(shape);
-    }
-
-    public static Tensor<T> One(TensorShape shape)
-    {
-        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
-        {
-            throw new TensorTypeNotSupportedException(typeof(T));
-        }
-
-        return SonraMLConfiguration.Backend.TensorFactory.One<T>(shape);
-    }
-
-    public static Tensor<T> FromMemory(Memory<T> memory, TensorShape shape)
-    {
-        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
-        {
-            throw new TensorTypeNotSupportedException(typeof(T));
-        }
-
-        return SonraMLConfiguration.Backend.TensorFactory.Create(memory, shape);
-    }
-
-    public static Tensor<T> FromEnumerable(IEnumerable<T> enumerable, TensorShape shape)
-    {
-        return FromMemory(enumerable.ToArray().AsMemory(), shape);
-    }
-
-    public static Tensor<T> FromScalar(T scalar)
-    {
-        if (!SonraMLConfiguration.Backend.TensorFactory.IsTypeSupported<T>())
-        {
-            throw new TensorTypeNotSupportedException(typeof(T));
-        }
-
-        return SonraMLConfiguration.Backend.TensorFactory.Create(scalar);
-    }
-
-    #endregion
 
     #region Properties
 
@@ -69,9 +20,7 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
     #endregion
 
     #region ObjectMethods
-
-    public abstract void Dispose();
-
+    
     public virtual bool Equals(Tensor<T>? other)
     {
         if (other is null)
@@ -94,7 +43,7 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
             return false;
         }
 
-        using var t = Equal(other);
+        var t = Equal(other);
 
         return t.All(f => f);
     }
@@ -163,21 +112,21 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
 
     #region ArithmeticOps
     
-    public abstract void Add(Tensor<T> other);
+    public abstract Tensor<T> Add(Tensor<T> other);
 
-    public abstract void Sub(Tensor<T> other);
+    public abstract Tensor<T> Sub(Tensor<T> other);
 
-    public abstract void Mul(Tensor<T> other);
+    public abstract Tensor<T> Mul(Tensor<T> other);
     
-    public abstract void MatMul(Tensor<T> other);
+    public abstract Tensor<T> MatMul(Tensor<T> other);
 
-    public abstract void Div(Tensor<T> other);
+    public abstract Tensor<T> Div(Tensor<T> other);
     
-    public abstract void Mod(Tensor<T> other);
+    public abstract Tensor<T> Mod(Tensor<T> other);
     
-    public abstract void Fma(Tensor<T> toMul, Tensor<T> toAdd, float scaleProd = 1.0f, float scaleAdd = 1.0f);
+    public abstract Tensor<T> Fma(Tensor<T> toMul, Tensor<T> toAdd, float scaleProd = 1.0f, float scaleAdd = 1.0f);
 
-    public abstract void Neg();
+    public abstract Tensor<T> Neg();
     
     #endregion
     
@@ -205,105 +154,105 @@ public abstract class Tensor<T> : GenericTensor, IDisposable, IEquatable<Tensor<
 
     #region BitwiseOps
 
-    public abstract void BitwiseAnd(Tensor<T> other);
+    public abstract Tensor<T> BitwiseAnd(Tensor<T> other);
     
-    public abstract void BitwiseOr(Tensor<T> other);
+    public abstract Tensor<T> BitwiseOr(Tensor<T> other);
     
-    public abstract void BitwiseXor(Tensor<T> other);
+    public abstract Tensor<T> BitwiseXor(Tensor<T> other);
 
-    public abstract void BitwiseNot();
+    public abstract Tensor<T> BitwiseNot();
 
     #endregion
     
     #region ExponentialOps
 
-    public abstract void Exp();
+    public abstract Tensor<T> Exp();
 
-    public abstract void Log();
+    public abstract Tensor<T> Log();
 
-    public abstract void Log10();
+    public abstract Tensor<T> Log10();
 
-    public abstract void Log2();
+    public abstract Tensor<T> Log2();
 
-    public abstract void Log1P();
+    public abstract Tensor<T> Log1P();
 
-    public abstract void Square();
+    public abstract Tensor<T> Square();
 
-    public abstract void Sqrt();
+    public abstract Tensor<T> Sqrt();
 
-    public abstract void RSqrt();
+    public abstract Tensor<T> RSqrt();
     
-    public abstract void Pow(Tensor<T> other);
+    public abstract Tensor<T> Pow(Tensor<T> other);
     
     #endregion
     
     #region TrigonometricOps
 
-    public abstract void Sin();
+    public abstract Tensor<T> Sin();
 
-    public abstract void SinH();
+    public abstract Tensor<T> SinH();
 
-    public abstract void ArcSin();
+    public abstract Tensor<T> ArcSin();
 
-    public abstract void ArcSinH();
+    public abstract Tensor<T> ArcSinH();
 
-    public abstract void Cos();
+    public abstract Tensor<T> Cos();
 
-    public abstract void CosH();
+    public abstract Tensor<T> CosH();
 
-    public abstract void ArcCos();
+    public abstract Tensor<T> ArcCos();
 
-    public abstract void ArcCosH();
+    public abstract Tensor<T> ArcCosH();
 
-    public abstract void Tan();
+    public abstract Tensor<T> Tan();
 
-    public abstract void TanH();
+    public abstract Tensor<T> TanH();
 
-    public abstract void ArcTan();
+    public abstract Tensor<T> ArcTan();
 
-    public abstract void ArcTanH();
+    public abstract Tensor<T> ArcTanH();
 
-    public abstract void ArcTan2(Tensor<T> other);
+    public abstract Tensor<T> ArcTan2(Tensor<T> other);
     
     #endregion
     
     #region Rounding
 
-    public abstract void Floor();
+    public abstract Tensor<T> Floor();
     
-    public abstract void Round(int decimals);
+    public abstract Tensor<T> Round(int decimals);
     
-    public abstract void Ceil();
+    public abstract Tensor<T> Ceil();
 
-    public abstract void Clip(T min, T max);
+    public abstract Tensor<T> Clip(T min, T max);
 
     #endregion
 
-    public abstract void Abs();
+    public abstract Tensor<T> Abs();
 
-    public abstract void Sum(bool keepDims);
+    public abstract Tensor<T> Sum(bool keepDims);
 
-    public abstract void Mean(bool keepDims);
+    public abstract Tensor<T> Mean(bool keepDims);
 
-    public abstract void Std(bool keepDims, int ddof);
+    public abstract Tensor<T> Std(bool keepDims, int ddof);
 
-    public abstract void Variance(bool keepDims, int ddof);
+    public abstract Tensor<T> Variance(bool keepDims, int ddof);
     
-    public abstract void Minimum(Tensor<T> other);
+    public abstract Tensor<T> Minimum(Tensor<T> other);
 
-    public abstract void Min(bool keepDims);
+    public abstract Tensor<T> Min(bool keepDims);
     
-    public abstract void Maximum(Tensor<T> other);
+    public abstract Tensor<T> Maximum(Tensor<T> other);
 
-    public abstract void Max(bool keepDims);
+    public abstract Tensor<T> Max(bool keepDims);
 
     #region SpecialOps
 
-    public abstract void Sigmoid();
+    public abstract Tensor<T> Sigmoid();
 
-    public abstract void Softmax();
+    public abstract Tensor<T> Softmax();
 
-    public abstract void TopK(int k);
+    public abstract Tensor<T> TopK(int k);
 
     #endregion
 

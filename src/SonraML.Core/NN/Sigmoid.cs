@@ -4,12 +4,8 @@ namespace SonraML.Core.NN;
 
 public class Sigmoid<T> : NNModule<T> where T : struct
 {
-    public override void Dispose()
+    public override Tensor<T> Forward(Tensor<T> x)
     {
-    }
-    
-    public override void Forward(Tensor<T> x)
-    {
-        x.Sigmoid();
+        return x.Sigmoid();
     }
 }

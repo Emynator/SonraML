@@ -1,31 +1,31 @@
+using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
 public class Linear<T> : NNModule<T> where T : struct
 {
+    private readonly IGlobalTensorFactory gtf;
+    private readonly ITensorFactory tf;
     private readonly Tensor<T> weights;
     private readonly Tensor<T> biases;
 
-    public Linear(int dimensions, int features)
+    public Linear(IGlobalTensorFactory gtf, ITensorFactory tf, int inputFeatures, int outputFeatures)
     {
-        var weightShape = new TensorShape([dimensions, features]);
-        var weightArray = new T[weightShape.Size];
-        weights = Tf.Create(weightArray.AsMemory(), weightShape);
+        this.gtf = gtf;
+        this.tf = tf;
         
-        var biasesShape = new TensorShape([dimensions]);
+        var weightShape = new TensorShape([inputFeatures, outputFeatures]);
+        var weightArray = new T[weightShape.Size];
+        weights = gtf.Create(weightArray.AsMemory(), weightShape);
+        
+        var biasesShape = new TensorShape([outputFeatures]);
         var biasesArray = new T[biasesShape.Size];
-        biases = Tf.Create(biasesArray.AsMemory(), biasesShape);
+        biases = gtf.Create(biasesArray.AsMemory(), biasesShape);
     }
 
-    public override void Dispose()
+    public override Tensor<T> Forward(Tensor<T> x)
     {
-        weights.Dispose();
-        biases.Dispose();
-    }
-
-    public override void Forward(Tensor<T> x)
-    {
-        x.Fma(weights, biases);
+        return x.Fma(weights, biases);
     }
 }

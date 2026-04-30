@@ -1,32 +1,27 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SonraML.Core.Enums;
-using SonraML.Core.Exceptions;
 
 namespace SonraML.Core;
 
 public static class SonraMLConfiguration
 {
-    private static SonraMLBackend? backend;
-
-    public static SonraMLBackend Backend => backend ?? throw new BackendNotInitializedException();
-
-    public static void AddBackend(SonraMLBackend b)
+    public static IHostApplicationBuilder ConfigureSonraML
+        (
+        this IHostApplicationBuilder builder,
+        Action<IHostApplicationBuilder> configureBackend
+        )
     {
-        backend = b;
-    }
-
-    public static void Init(BackendDeviceType type)
-    {
-        if (backend is null)
-        {
-            throw new MissingBackendException();
-        }
+        configureBackend(builder);
         
-        backend.Init(type);
+        return builder;
     }
 
-    public static void Shutdown()
+    public static IHost InitSonraML(this IHost host, BackendDeviceType deviceType)
     {
-        backend?.Dispose();
-        backend = null;
+        var backend = host.Services.GetRequiredService<ISonraMLBackend>();
+        backend.Init(deviceType);
+        
+        return host;
     }
 }

@@ -5,21 +5,23 @@ namespace SonraML.Core.NN;
 public class Sequential<T> : NNModule<T> where T : struct
 {
     private readonly List<NNModule<T>> modules = [];
-    
-    public override void Forward(Tensor<T> x)
-    {
-        foreach (var module in modules)
-        {
-            module.Forward(x);
-        }
-    }
 
-    public override void Dispose()
+    public Sequential(IServiceProvider serviceProvider)
     {
+        ServiceProvider = serviceProvider;
+    }
+    
+    internal IServiceProvider ServiceProvider { get; init; }
+    
+    public override Tensor<T> Forward(Tensor<T> x)
+    {
+        var result = x.Copy();
         foreach (var module in modules)
         {
-            module.Dispose();
+            x = module.Forward(x);
         }
+        
+        return result;
     }
     
     internal void Add(NNModule<T> module)
