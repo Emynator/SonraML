@@ -17,6 +17,18 @@ public interface ITensorFactory : IDisposable
     public Tensor<T> Create<T>(T scalar, string? name = null) where T : struct;
     
     public Tensor<T> Create<T>(Memory<T> array, TensorShape shape, string? name = null) where T : struct;
+
+    public Tensor<T> Arange<T>(double start, double stop, double step, string? name) where T : struct;
+
+    public Tensor<T> Linspace<T>(double start, double stop, int samples, string? name)  where T : struct;
+
+    public Tensor<T> Concat<T>(Tensor<T>[] tensors, string? name) where T : struct;
+
+    public Tensor<T> Concat<T>(Tensor<T>[] tensors, int axis, string? name) where T : struct;
+
+    public Tensor<T> Stack<T>(Tensor<T>[] tensors, string? name) where T : struct;
+
+    public Tensor<T> Stack<T>(Tensor<T>[] tensors, int axis, string? name) where T : struct;
 }
 
 public interface IGlobalTensorFactory : ITensorFactory;

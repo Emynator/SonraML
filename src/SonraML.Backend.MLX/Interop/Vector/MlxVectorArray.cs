@@ -11,7 +11,7 @@ internal unsafe partial struct MlxVectorArray
     public static partial MlxVectorArray New();
 
     [LibraryImport("mlxc", EntryPoint = "mlx_vector_array_new_data")]
-    public static partial MlxVectorArray NewData(ref readonly MlxArray data, UIntPtr size);
+    public static partial MlxVectorArray NewData(MlxArray* data, UIntPtr size);
 
     [LibraryImport("mlxc", EntryPoint = "mlx_vector_array_new_value")]
     public static partial MlxVectorArray NewValue(MlxArray val);

@@ -1178,7 +1178,7 @@ internal static unsafe partial class MlxOps
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_ones_like")]
-    public static partial int OnesLike(MlxArray* res, MlxArray a, MlxStream s);
+    public static partial int OnesLike(ref readonly MlxArray res, MlxArray a, MlxStream s);
 
     [LibraryImport("mlxc", EntryPoint = "mlx_outer")]
     public static partial int Outer
@@ -1903,7 +1903,7 @@ internal static unsafe partial class MlxOps
         );
 
     [LibraryImport("mlxc", EntryPoint = "mlx_take_along_axis")]
-    public static partial int TakeALongAxis
+    public static partial int TakeAlongAxis
         (
         ref readonly MlxArray res,
         MlxArray a,

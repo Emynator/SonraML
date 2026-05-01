@@ -9,18 +9,18 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
     #region Properties
 
-    public override TensorShape Shape => shape ?? throw new InvalidOperationException("Shape is not set."); 
+    public override TensorShape Shape => shape ?? throw new InvalidOperationException("Shape is not set.");
 
     public int Size => Shape.Size;
 
     public int Dimensions => Shape.Dimensions;
 
-    public bool IsScalar { get; protected set; }
+    public abstract bool IsScalar { get; }
 
     #endregion
 
     #region ObjectMethods
-    
+
     public virtual bool Equals(Tensor<T>? other)
     {
         if (other is null)
@@ -88,7 +88,7 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
         return result ?? throw new BackendOperationException("Expected cloning to return a Tensor<T>.");
     }
-    
+
     public abstract void CopyFrom(Tensor<T> other);
 
     public abstract Tensor<TTarget> ConvertTo<TTarget>() where TTarget : struct;
@@ -113,25 +113,29 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
     #region TensorOps
 
     #region ArithmeticOps
-    
+
     public abstract Tensor<T> Add(Tensor<T> other);
 
     public abstract Tensor<T> Sub(Tensor<T> other);
 
     public abstract Tensor<T> Mul(Tensor<T> other);
-    
-    public abstract Tensor<T> MatMul(Tensor<T> other);
+
+    public abstract Tensor<T> Rec();
 
     public abstract Tensor<T> Div(Tensor<T> other);
-    
+
     public abstract Tensor<T> Mod(Tensor<T> other);
-    
-    public abstract Tensor<T> Fma(Tensor<T> toMul, Tensor<T> toAdd, float scaleProd = 1.0f, float scaleAdd = 1.0f);
+
+    public abstract Tensor<T> Rem(Tensor<T> other);
 
     public abstract Tensor<T> Neg();
-    
+
+    public abstract Tensor<T> Abs();
+
+    public abstract Tensor<T> Sign();
+
     #endregion
-    
+
     #region LogicalOps
 
     public abstract Tensor<bool> Equal(Tensor<T> other);
@@ -151,24 +155,36 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
     public abstract Tensor<bool> Or(Tensor<T> other);
 
     public abstract Tensor<bool> Not();
-    
+
+    public abstract Tensor<bool> IsNAN();
+
+    public abstract Tensor<bool> IsInfinity();
+
+    public abstract Tensor<bool> IsFinite();
+
+    public abstract Tensor<bool> IsClose(Tensor<T> other, double rTol, double aTol, bool equalNAN = false);
+
+    public abstract Tensor<bool> AllClose(Tensor<T> other, double rTol, double aTol, bool equalNAN = false);
+
     #endregion
 
     #region BitwiseOps
 
     public abstract Tensor<T> BitwiseAnd(Tensor<T> other);
-    
+
     public abstract Tensor<T> BitwiseOr(Tensor<T> other);
-    
+
     public abstract Tensor<T> BitwiseXor(Tensor<T> other);
 
     public abstract Tensor<T> BitwiseNot();
 
     #endregion
-    
+
     #region ExponentialOps
 
     public abstract Tensor<T> Exp();
+
+    public abstract Tensor<T> ExpM1();
 
     public abstract Tensor<T> Log();
 
@@ -183,11 +199,19 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
     public abstract Tensor<T> Sqrt();
 
     public abstract Tensor<T> RSqrt();
-    
+
     public abstract Tensor<T> Pow(Tensor<T> other);
-    
+
+    public abstract Tensor<T> LogSumExp(bool keepDims = false);
+
+    public abstract Tensor<T> LogSumExp(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> LogSumExp(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<T> LogAddExp(Tensor<T> other);
+
     #endregion
-    
+
     #region TrigonometricOps
 
     public abstract Tensor<T> Sin();
@@ -215,46 +239,176 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
     public abstract Tensor<T> ArcTanH();
 
     public abstract Tensor<T> ArcTan2(Tensor<T> other);
-    
+
     #endregion
-    
+
     #region Rounding
 
     public abstract Tensor<T> Floor();
-    
+
     public abstract Tensor<T> Round(int decimals);
-    
+
     public abstract Tensor<T> Ceil();
 
     public abstract Tensor<T> Clip(T min, T max);
 
+    public abstract Tensor<T> FloorDiv(Tensor<T> other);
+
     #endregion
 
-    public abstract Tensor<T> Abs();
+    #region MatrixOps
 
-    public abstract Tensor<T> Sum(bool keepDims);
+    public abstract Tensor<T> MatMul(Tensor<T> other);
 
-    public abstract Tensor<T> Mean(bool keepDims);
+    public abstract Tensor<T> Fma(Tensor<T> a, Tensor<T> c, float alpha = 1.0f, float beta = 1.0f);
 
-    public abstract Tensor<T> Std(bool keepDims, int ddof);
+    public abstract Tensor<T> Transpose();
+
+    public abstract Tensor<T> Transpose(int[] axes);
+
+    public abstract Tensor<T> SwapAxes(int a, int b);
+
+    public abstract Tensor<T> MoveAxis(int src, int dest);
+
+    public abstract Tensor<T> Diag(int diagonal);
+
+    #endregion
+
+    #region ShapeOps
+
+    public abstract Tensor<T> Reshape(TensorShape shape);
+
+    public abstract Tensor<T> Flatten(int startAxis, int endAxis);
+
+    public abstract Tensor<T> ExpandDims(int axis);
+
+    public abstract Tensor<T> ExpandDims(int[] axes);
+
+    public abstract Tensor<T> BroadcastTo(TensorShape shape);
+
+    #endregion
+
+    #region IndexingOps
+
+    public abstract Tensor<T> Slice(int[] start, int[] stop, int[] strides);
+
+    public abstract Tensor<T> DynamicSlice(Tensor<T> start, int[] axes, int[] sliceSize);
+
+    public abstract Tensor<T> SliceUpdate(Tensor<T> update, int[] start, int[] stop, int[] strides);
+
+    public abstract Tensor<T> Take(Tensor<T> indices);
+
+    public abstract Tensor<T> Take(Tensor<T> indices, int axis);
+
+    public abstract Tensor<T> TakeAlongAxis(Tensor<T> indices, int axis);
+
+    public abstract Tensor<T> Gather(Tensor<T>[] indices, int[] axes, int[] sliceSices);
+
+    #endregion
+
+    #region SplitOps
+
+    public abstract Tensor<T>[] Split(int numSplits, int axis);
+
+    public abstract Tensor<T>[] Split(int[] indices, int axis);
+
+    #endregion
+
+    #region PredicateOps
+
+    public abstract Tensor<T> Sum(bool keepDims = false);
+
+    public abstract Tensor<T> Sum(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> Sum(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<T> Min(bool keepDims = false);
+
+    public abstract Tensor<T> Min(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> Min(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<T> Max(bool keepDims = false);
+
+    public abstract Tensor<T> Max(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> Max(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<T> Mean(bool keepDims = false);
+
+    public abstract Tensor<T> Mean(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> Mean(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<T> Std(int ddof, bool keepDims = false);
+
+    public abstract Tensor<T> Std(int axis, int ddof, bool keepDims = false);
+
+    public abstract Tensor<T> Std(int[] axes, int ddof, bool keepDims = false);
+
+    public abstract Tensor<T> ArgMin(bool keepDims = false);
+
+    public abstract Tensor<T> ArgMin(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> ArgMax(bool keepDims = false);
+
+    public abstract Tensor<T> ArgMax(int axis, bool keepDims = false);
 
     public abstract Tensor<T> Variance(bool keepDims, int ddof);
-    
+
+    #endregion
+
+    #region SelectionOps
+
+    public abstract Tensor<T> All(bool keepDims = false);
+
+    public abstract Tensor<T> All(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> All(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<T> Any(bool keepDims = false);
+
+    public abstract Tensor<T> Any(int axis, bool keepDims = false);
+
+    public abstract Tensor<T> Any(int[] axes, bool keepDims = false);
+
+    public abstract Tensor<TResult> Where<TResult>
+        (
+        Tensor<TResult> ifTrue,
+        Tensor<TResult> ifFalse
+        ) where TResult : struct;
+
     public abstract Tensor<T> Minimum(Tensor<T> other);
 
-    public abstract Tensor<T> Min(bool keepDims);
-    
     public abstract Tensor<T> Maximum(Tensor<T> other);
 
-    public abstract Tensor<T> Max(bool keepDims);
+    public abstract Tensor<T> TopK(int k);
 
-    #region SpecialOps
+    public abstract Tensor<T> TopK(int k, int axis);
+
+    #endregion
+
+    #region LikeOps
+
+    public abstract Tensor<T> ZerosLike();
+
+    public abstract Tensor<T> OnesLike();
+
+    #endregion
+
+    #region NeuralOps
 
     public abstract Tensor<T> Sigmoid();
 
-    public abstract Tensor<T> Softmax();
+    public abstract Tensor<T> Softmax(bool precise = true);
 
-    public abstract Tensor<T> TopK(int k);
+    public abstract Tensor<T> Softmax(int axis, bool precise = true);
+
+    public abstract Tensor<T> Softmax(int[] axes, bool precise = true);
+
+    public abstract Tensor<T> Erf();
+
+    public abstract Tensor<T> ErfInv();
 
     #endregion
 
