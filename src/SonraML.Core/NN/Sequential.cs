@@ -1,30 +1,44 @@
+using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class Sequential<T> : NNModule<T> where T : struct
+public class Sequential<T> : INNModule<T> where T : struct
 {
-    private readonly List<NNModule<T>> modules = [];
+    private readonly List<INNModule<T>> modules = [];
 
     public Sequential(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
     }
     
-    internal IServiceProvider ServiceProvider { get; init; }
-    
-    public override Tensor<T> Forward(Tensor<T> x)
+    public IServiceProvider ServiceProvider { get; }
+
+    public IEnumerable<Parameter<T>> Parameters => modules.SelectMany(module => module.Parameters);
+
+    public Tensor<T> Forward(Tensor<T> input)
     {
-        var result = x.Copy();
+        var result = input.Copy();
         foreach (var module in modules)
         {
-            x = module.Forward(x);
+            result = module.Forward(result);
         }
         
         return result;
     }
-    
-    internal void Add(NNModule<T> module)
+
+    public Tensor<T> Backward(Tensor<T> gradOutput)
+    {
+        var result = gradOutput.Copy();
+        for (var i = modules.Count - 1; i > 0; i--)
+        {
+            result = modules[i].Backward(result);
+        }
+        
+        return result;
+    }
+
+    public void AddModule(INNModule<T> module)
     {
         modules.Add(module);
     }

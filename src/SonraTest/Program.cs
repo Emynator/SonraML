@@ -9,7 +9,8 @@ public static class Program
     public static void Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder(args);
-        builder.ConfigureSonraML(typeof(Program).Assembly, MlxBackendConfiguration.UseMlxBackend);
+        builder.ConfigureSonraML(MlxBackendConfiguration.UseMlxBackend);
+        builder.Services.AddRunner<TestRunner, TestRunnerContext>();
 
         var host = builder.Build();
         host.InitSonraML(BackendDeviceType.Gpu);

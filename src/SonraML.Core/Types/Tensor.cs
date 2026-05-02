@@ -112,6 +112,8 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
     #region TensorOps
 
+    public abstract void EnsureCompute();
+
     #region ArithmeticOps
 
     public abstract Tensor<T> Add(Tensor<T> other);

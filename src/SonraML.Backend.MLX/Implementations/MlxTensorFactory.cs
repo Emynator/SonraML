@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Logging;
 using SonraML.Backend.MLX.Interfaces;
 using SonraML.Backend.MLX.Interop;
 using SonraML.Backend.MLX.Interop.Enums;
 using SonraML.Backend.MLX.Managed;
+using SonraML.Core.Enums;
 using SonraML.Core.Exceptions;
 using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
@@ -10,19 +12,47 @@ namespace SonraML.Backend.MLX.Implementations;
 
 internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
 {
-    private readonly ManagedMlxStream stream;
+    private readonly ILogger<MlxTensorFactory> logger;
+
+    [ThreadStatic]
+    private static ManagedMlxStream? stream;
+
+    private readonly BackendDeviceType deviceType;
+    private readonly List<ManagedMlxStream> streams = [];
     private readonly List<GenericTensor> tensors = [];
 
-    public MlxTensorFactory(IMlxBackendGlobals globals)
+    public MlxTensorFactory(ILogger<MlxTensorFactory> logger, IMlxBackendGlobals globals)
     {
-        stream = new ManagedMlxStream(globals.DeviceType);
+        this.logger = logger;
+        deviceType = globals.DeviceType;
     }
-    
+
+    public ManagedMlxStream Stream
+    {
+        get
+        {
+            logger.LogDebug("Stream access from thread '{thread}'", Thread.CurrentThread.ManagedThreadId);
+            if (stream is null)
+            {
+                logger.LogDebug("Thread '{thread}' created new stream.", Thread.CurrentThread.ManagedThreadId);
+                stream = new ManagedMlxStream(deviceType);
+                streams.Add(stream);
+            }
+            
+            return stream;
+        }
+    }
+
     public void Dispose()
     {
         foreach (var tensor in tensors)
         {
             tensor.Release();
+        }
+
+        foreach (var s in streams)
+        {
+            s.Dispose();
         }
     }
 
@@ -39,7 +69,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, shape, name);
+        var result = new MlxTensor<T>(this, shape, name);
         tensors.Add(result);
         
         result.SetZero();
@@ -55,7 +85,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, shape, name);
+        var result = new MlxTensor<T>(this, shape, name);
         tensors.Add(result);
         
         result.SetOne();
@@ -71,7 +101,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, true, name);
+        var result = new MlxTensor<T>(this, true, name);
         tensors.Add(result);
 
         return result;
@@ -85,7 +115,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, false, name);
+        var result = new MlxTensor<T>(this, false, name);
         tensors.Add(result);
         
         return result;
@@ -99,7 +129,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, scalar, name);
+        var result = new MlxTensor<T>(this, scalar, name);
         tensors.Add(result);
         
         return result;
@@ -113,7 +143,7 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, array, shape, name);
+        var result = new MlxTensor<T>(this, array, shape, name);
         tensors.Add(result);
         
         return result;
@@ -127,9 +157,9 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         tensors.Add(result);
-        MlxOps.Arange(in result.Array.Array, start, stop, step, dtype.Value, stream.Stream);
+        MlxOps.Arange(in result.Array.Array, start, stop, step, dtype.Value, Stream.Stream);
         
         return result;
     }
@@ -142,9 +172,9 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         tensors.Add(result);
-        MlxOps.Linspace(in result.Array.Array, start, stop, samples, dtype.Value, stream.Stream);
+        MlxOps.Linspace(in result.Array.Array, start, stop, samples, dtype.Value, Stream.Stream);
         
         return result;
     }
@@ -162,11 +192,11 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         this.tensors.Add(result);
         
         using var vec = new ManagedMlxVectorArray<T>(ts);
-        MlxOps.Concatenate(in result.Array.Array, vec.Vector, stream.Stream);
+        MlxOps.Concatenate(in result.Array.Array, vec.Vector, Stream.Stream);
         
         return result;
     }
@@ -184,11 +214,11 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         this.tensors.Add(result);
         
         using var vec = new ManagedMlxVectorArray<T>(ts);
-        MlxOps.ConcatenateAxis(in result.Array.Array, vec.Vector, axis, stream.Stream);
+        MlxOps.ConcatenateAxis(in result.Array.Array, vec.Vector, axis, Stream.Stream);
         
         return result;
     }
@@ -206,18 +236,19 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         this.tensors.Add(result);
         
         using var vec = new ManagedMlxVectorArray<T>(ts);
-        MlxOps.Stack(in result.Array.Array, vec.Vector, stream.Stream);
+        MlxOps.Stack(in result.Array.Array, vec.Vector, Stream.Stream);
         
         return result;
     }
 
     public Tensor<T> Stack<T>(Tensor<T>[] tensors, int axis, string? name) where T : struct
     {
-        if (tensors is not MlxTensor<T>[] ts)
+        var ts = tensors.Select(t => t as MlxTensor<T>).ToArray();
+        if (ts is null || ts.Length != tensors.Length)
         {
             throw new TensorCompatibilityException();
         }
@@ -228,18 +259,18 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
         
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         this.tensors.Add(result);
         
         using var vec = new ManagedMlxVectorArray<T>(ts);
-        MlxOps.StackAxis(in result.Array.Array, vec.Vector, axis, stream.Stream);
+        MlxOps.StackAxis(in result.Array.Array, vec.Vector, axis, Stream.Stream);
         
         return result;
     }
 
     internal MlxTensor<T> CreateEmpty<T>(string? name = null) where T : struct
     {
-        var result = new MlxTensor<T>(this, stream.Stream, name);
+        var result = new MlxTensor<T>(this, name);
         tensors.Add(result);
         
         return result;

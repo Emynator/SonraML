@@ -9,22 +9,35 @@ namespace SonraML.Core;
 
 public static class SonraMLConfiguration
 {
+    internal static Dictionary<string, string> RunnerConfig = [];
+
     public static IHostApplicationBuilder ConfigureSonraML
         (
         this IHostApplicationBuilder builder,
-        Assembly assembly,
         Action<IHostApplicationBuilder> configureBackend
         )
     {
         configureBackend(builder);
-        var runners = assembly.GetTypes().Where(t => t.GetInterface(nameof(ISonraRunner)) is not null);
-        foreach (var runner in runners)
-        {
-            builder.Services.AddKeyedScoped(typeof(ISonraRunner), runner.Name, runner);
-            builder.Services.AddHostedService<SonraWorker>(services => new SonraWorker(services, runner.Name));
-        }
 
         return builder;
+    }
+
+    public static IServiceCollection AddRunner<TRunner, TContext>
+        (this IServiceCollection services) where TRunner : ISonraRunner where TContext : ISonraRunnerContext
+    {
+        var rname = typeof(TRunner).Name;
+        var cname = $"{typeof(TContext).Name}_Context";
+        if (RunnerConfig.TryAdd(rname, cname))
+        {
+            services.AddKeyedScoped(typeof(ISonraRunner), rname, typeof(TRunner));
+            services.AddKeyedScoped(typeof(ISonraRunnerContext), cname, typeof(TContext));
+            services.AddHostedService<SonraWorker>
+            (sp =>
+                new SonraWorker(sp, rname, cname)
+            );
+        }
+
+        return services;
     }
 
     public static IHost InitSonraML(this IHost host, BackendDeviceType deviceType)

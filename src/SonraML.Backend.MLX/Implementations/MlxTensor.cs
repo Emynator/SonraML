@@ -10,54 +10,48 @@ namespace SonraML.Backend.MLX.Implementations;
 internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
 {
     private readonly MlxTensorFactory tf;
-    private readonly MlxStream stream;
     
     public readonly ManagedMlxArray<T> Array;
 
     #region Ctors
 
-    public MlxTensor(MlxTensorFactory tf, MlxStream stream, string? name = null)
+    public MlxTensor(MlxTensorFactory tf, string? name = null)
     {
         Array = new ManagedMlxArray<T>();
         this.tf = tf;
-        this.stream = stream;
         Name = name ?? "";
         Type = typeof(T);
     }
 
-    public MlxTensor(MlxTensorFactory tf, MlxStream stream, bool isZero, string? name = null)
+    public MlxTensor(MlxTensorFactory tf, bool isZero, string? name = null)
     {
         Array = new ManagedMlxArray<T>(isZero);
         this.tf = tf;
-        this.stream = stream;
         Name = name ?? "";
         Type = typeof(T);
     }
 
-    public MlxTensor(MlxTensorFactory tf, MlxStream stream, TensorShape shape, string? name = null)
+    public MlxTensor(MlxTensorFactory tf, TensorShape shape, string? name = null)
     {
         Array = new ManagedMlxArray<T>();
         this.tf = tf;
-        this.stream = stream;
         this.shape = shape;
         Name = name ?? "";
         Type = typeof(T);
     }
 
-    public MlxTensor(MlxTensorFactory tf, MlxStream stream, Memory<T> array, TensorShape shape, string? name = null)
+    public MlxTensor(MlxTensorFactory tf, Memory<T> array, TensorShape shape, string? name = null)
     {
         this.Array = new ManagedMlxArray<T>(array, shape);
         this.tf = tf;
-        this.stream = stream;
         Name = name ?? "";
         Type = typeof(T);
     }
 
-    public MlxTensor(MlxTensorFactory tf, MlxStream stream, T scalar, string? name = null)
+    public MlxTensor(MlxTensorFactory tf, T scalar, string? name = null)
     {
         Array = new ManagedMlxArray<T>(scalar);
         this.tf = tf;
-        this.stream = stream;
         Name = name ?? "";
         Type = typeof(T);
     }
@@ -67,6 +61,8 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override TensorShape Shape => Array.GetShape();
 
     public override bool IsScalar => MlxArray.NDim(Array.Array) == 0;
+    
+    private MlxStream Stream => tf.Stream.Stream;
 
     #region ObjectMethods
 
@@ -107,7 +103,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         using var result = new ManagedMlxArray<bool>();
-        MlxOps.ArrayEqual(in result.Array, Array.Array, o.Array.Array, false, stream);
+        MlxOps.ArrayEqual(in result.Array, Array.Array, o.Array.Array, false, Stream);
 
         return result.GetScalar();
     }
@@ -144,7 +140,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<TTarget>();
-        MlxOps.AsType(in result.Array.Array, Array.Array, dtype.Value, stream);
+        MlxOps.AsType(in result.Array.Array, Array.Array, dtype.Value, Stream);
 
         return result;
     }
@@ -163,7 +159,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)shapeHandle.Pointer,
             (UIntPtr)shape.Dimensions,
             MlxDType.GetDTypeValid<T>(),
-            stream
+            Stream
         );
     }
 
@@ -176,7 +172,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)shapeHandle.Pointer,
             (UIntPtr)shape.Dimensions,
             MlxDType.GetDTypeValid<T>(),
-            stream
+            Stream
         );
     }
 
@@ -186,6 +182,11 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
 
     #region ArithmeticOps
 
+    public override void EnsureCompute()
+    {
+        Array.Eval();
+    }
+
     public override Tensor<T> Add(Tensor<T> other)
     {
         if (other is not MlxTensor<T> o)
@@ -194,7 +195,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Add(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Add(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -207,7 +208,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Subtract(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Subtract(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -220,7 +221,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Multiply(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Multiply(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -228,7 +229,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Rec()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Reciprocal(in result.Array.Array, Array.Array, stream);
+        MlxOps.Reciprocal(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -241,7 +242,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Divide(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Divide(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -254,7 +255,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         using var vec = new ManagedMlxVectorArray<T>();
-        MlxOps.DivMod(in vec.Vector, Array.Array, o.Array.Array, stream);
+        MlxOps.DivMod(in vec.Vector, Array.Array, o.Array.Array, Stream);
         var res = vec.Get(1);
         
         var result = tf.CreateEmpty<T>();
@@ -272,7 +273,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         using var vec = new ManagedMlxVectorArray<T>();
-        MlxOps.DivMod(in vec.Vector, Array.Array, o.Array.Array, stream);
+        MlxOps.DivMod(in vec.Vector, Array.Array, o.Array.Array, Stream);
         var res = vec.Get(0);
         
         var result = tf.CreateEmpty<T>();
@@ -285,7 +286,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Neg()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Negative(in result.Array.Array, Array.Array, stream);
+        MlxOps.Negative(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -293,7 +294,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Abs()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Abs(in result.Array.Array, Array.Array, stream);
+        MlxOps.Abs(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -301,7 +302,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Sign()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Sign(in result.Array.Array, Array.Array, stream);
+        MlxOps.Sign(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -318,7 +319,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.Equal(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Equal(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -331,7 +332,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.NotEqual(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.NotEqual(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -344,7 +345,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.Less(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Less(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -357,7 +358,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.LessEqual(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.LessEqual(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -370,7 +371,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.Greater(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Greater(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -383,7 +384,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.GreaterEqual(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.GreaterEqual(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -396,7 +397,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.LogicalAnd(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.LogicalAnd(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -409,7 +410,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<bool>();
-        MlxOps.LogicalOr(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.LogicalOr(in result.Array.Array, Array.Array, o.Array.Array, Stream);
 
         return result;
     }
@@ -417,7 +418,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<bool> Not()
     {
         var result = tf.CreateEmpty<bool>();
-        MlxOps.LogicalNot(in result.Array.Array, Array.Array, stream);
+        MlxOps.LogicalNot(in result.Array.Array, Array.Array, Stream);
 
         return result;
     }
@@ -425,7 +426,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<bool> IsNAN()
     {
         var result = tf.CreateEmpty<bool>();
-        MlxOps.IsNAN(in result.Array.Array, Array.Array, stream);
+        MlxOps.IsNAN(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -433,7 +434,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<bool> IsInfinity()
     {
         var result = tf.CreateEmpty<bool>();
-        MlxOps.IsInf(in result.Array.Array, Array.Array, stream);
+        MlxOps.IsInf(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -441,7 +442,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<bool> IsFinite()
     {
         var result = tf.CreateEmpty<bool>();
-        MlxOps.IsFinite(in result.Array.Array, Array.Array, stream);
+        MlxOps.IsFinite(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -454,7 +455,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<bool>();
-        MlxOps.IsClose(in result.Array.Array, Array.Array, o.Array.Array, rTol, aTol, equalNAN, stream);
+        MlxOps.IsClose(in result.Array.Array, Array.Array, o.Array.Array, rTol, aTol, equalNAN, Stream);
         
         return result;
     }
@@ -467,7 +468,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<bool>();
-        MlxOps.AllClose(in result.Array.Array, Array.Array, o.Array.Array, rTol, aTol, equalNAN, stream);
+        MlxOps.AllClose(in result.Array.Array, Array.Array, o.Array.Array, rTol, aTol, equalNAN, Stream);
         
         return result;
     }
@@ -484,7 +485,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.BitwiseAnd(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.BitwiseAnd(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -497,7 +498,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.BitwiseOr(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.BitwiseOr(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -510,7 +511,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.BitwiseXor(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.BitwiseXor(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -518,7 +519,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> BitwiseNot()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.BitwiseInvert(in result.Array.Array, Array.Array, stream);
+        MlxOps.BitwiseInvert(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -530,7 +531,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Exp()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Exp(in result.Array.Array, Array.Array, stream);
+        MlxOps.Exp(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -538,7 +539,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ExpM1()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ExpM1(in result.Array.Array, Array.Array, stream);
+        MlxOps.ExpM1(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -546,7 +547,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Log()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Log(in result.Array.Array, Array.Array, stream);
+        MlxOps.Log(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -554,7 +555,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Log10()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Log10(in result.Array.Array, Array.Array, stream);
+        MlxOps.Log10(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -562,7 +563,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Log2()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Log2(in result.Array.Array, Array.Array, stream);
+        MlxOps.Log2(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -570,7 +571,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Log1P()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Log1P(in result.Array.Array, Array.Array, stream);
+        MlxOps.Log1P(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -578,7 +579,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Square()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Square(in result.Array.Array, Array.Array, stream);
+        MlxOps.Square(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -586,7 +587,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Sqrt()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Sqrt(in result.Array.Array, Array.Array, stream);
+        MlxOps.Sqrt(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -594,7 +595,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> RSqrt()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.RSqrt(in result.Array.Array, Array.Array, stream);
+        MlxOps.RSqrt(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -607,7 +608,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Power(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Power(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -615,7 +616,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> LogSumExp(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.LogSumExp(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.LogSumExp(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -623,7 +624,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> LogSumExp(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.LogSumExpAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.LogSumExpAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -638,7 +639,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 Array.Array,
                 (int*)handle.Pointer,
                 (UIntPtr)axes.Length,
-                keepDims, stream
+                keepDims, Stream
                 );
         
         return result;
@@ -652,7 +653,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<T>();
-        MlxOps.LogAddExp(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.LogAddExp(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -664,7 +665,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Sin()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Sin(in result.Array.Array, Array.Array, stream);
+        MlxOps.Sin(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -672,7 +673,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> SinH()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.SinH(in result.Array.Array, Array.Array, stream);
+        MlxOps.SinH(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -680,7 +681,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArcSin()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcSin(in result.Array.Array, Array.Array, stream);
+        MlxOps.ArcSin(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -688,7 +689,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArcSinH()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcSinH(in result.Array.Array, Array.Array, stream);
+        MlxOps.ArcSinH(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -696,7 +697,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Cos()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Cos(in result.Array.Array, Array.Array, stream);
+        MlxOps.Cos(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -704,7 +705,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> CosH()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.CosH(in result.Array.Array, Array.Array, stream);
+        MlxOps.CosH(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -712,7 +713,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArcCos()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcCos(in result.Array.Array, Array.Array, stream);
+        MlxOps.ArcCos(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -720,7 +721,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArcCosH()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcCosH(in result.Array.Array, Array.Array, stream);
+        MlxOps.ArcCosH(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -728,7 +729,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Tan()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Tan(in result.Array.Array, Array.Array, stream);
+        MlxOps.Tan(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -736,7 +737,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> TanH()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.TanH(in result.Array.Array, Array.Array, stream);
+        MlxOps.TanH(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -744,7 +745,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArcTan()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcTan(in result.Array.Array, Array.Array, stream);
+        MlxOps.ArcTan(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -752,7 +753,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArcTanH()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcTanH(in result.Array.Array, Array.Array, stream);
+        MlxOps.ArcTanH(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -765,7 +766,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArcTan2(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.ArcTan2(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -777,7 +778,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Floor()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Floor(in result.Array.Array, Array.Array, stream);
+        MlxOps.Floor(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -785,7 +786,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Round(int decimals)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Round(in result.Array.Array, Array.Array, decimals, stream);
+        MlxOps.Round(in result.Array.Array, Array.Array, decimals, Stream);
         
         return result;
     }
@@ -793,7 +794,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Ceil()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Ceil(in result.Array.Array, Array.Array, stream);
+        MlxOps.Ceil(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -804,7 +805,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         using var sMax = new ManagedMlxArray<T>(max);
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Clip(in result.Array.Array, Array.Array, sMin.Array, sMax.Array, stream);
+        MlxOps.Clip(in result.Array.Array, Array.Array, sMin.Array, sMax.Array, Stream);
         
         return result;
     }
@@ -817,7 +818,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<T>();
-        MlxOps.FloorDivide(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.FloorDivide(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -834,7 +835,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.MatMul(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.MatMul(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -860,7 +861,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             mul.Array.Array,
             alpha,
             beta,
-            stream
+            Stream
         );
         
         return result;
@@ -869,7 +870,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Transpose()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Transpose(in result.Array.Array, Array.Array, stream);
+        MlxOps.Transpose(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -878,7 +879,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     {
         using var handler = axes.AsMemory().Pin();
         var result = tf.CreateEmpty<T>();
-        MlxOps.TransposeAxes(in result.Array.Array, Array.Array, (int*)handler.Pointer, (UIntPtr)axes.Length, stream);
+        MlxOps.TransposeAxes(in result.Array.Array, Array.Array, (int*)handler.Pointer, (UIntPtr)axes.Length, Stream);
         
         return result;
     }
@@ -886,7 +887,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> SwapAxes(int a, int b)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.SwapAxes(in result.Array.Array, Array.Array, a, b, stream);
+        MlxOps.SwapAxes(in result.Array.Array, Array.Array, a, b, Stream);
         
         return result;
     }
@@ -894,7 +895,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> MoveAxis(int src, int dest)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.MoveAxis(in result.Array.Array, Array.Array, src, dest, stream);
+        MlxOps.MoveAxis(in result.Array.Array, Array.Array, src, dest, Stream);
         
         return result;
     }
@@ -902,7 +903,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Diag(int diagonal)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Diag(in result.Array.Array, Array.Array, diagonal, stream);
+        MlxOps.Diag(in result.Array.Array, Array.Array, diagonal, Stream);
         
         return result;
     }
@@ -915,7 +916,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     {
         using var handle = shape.Shape.AsMemory().Pin();
         var result = tf.CreateEmpty<T>();
-        MlxOps.Reshape(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Size, stream);
+        MlxOps.Reshape(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Size, Stream);
         
         return result;
     }
@@ -923,7 +924,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Flatten(int startAxis, int endAxis)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Flatten(in result.Array.Array, Array.Array, startAxis, endAxis, stream);
+        MlxOps.Flatten(in result.Array.Array, Array.Array, startAxis, endAxis, Stream);
         
         return result;
     }
@@ -931,7 +932,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ExpandDims(int axis)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ExpandDims(in result.Array.Array, Array.Array, axis, stream);
+        MlxOps.ExpandDims(in result.Array.Array, Array.Array, axis, Stream);
         
         return result;
     }
@@ -946,7 +947,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 Array.Array,
                 (int*)handle.Pointer,
                 (UIntPtr)axes.Length,
-                stream
+                Stream
                 );
         
         return result;
@@ -956,7 +957,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     {
         using var handle = shape.Shape.AsMemory().Pin();
         var result = tf.CreateEmpty<T>();
-        MlxOps.BroadcastTo(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Size, stream);
+        MlxOps.BroadcastTo(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Size, Stream);
         
         return result;
     }
@@ -981,7 +982,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 (UIntPtr)stop.Length,
                 (int*)stridesHandle.Pointer,
                 (UIntPtr)strides.Length,
-                stream
+                Stream
                 );
         
         return result;
@@ -1006,7 +1007,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (UIntPtr)axes.Length,
             (int*)sliceHandle.Pointer,
             (UIntPtr)sliceSize.Length,
-            stream
+            Stream
         );
         
         return result;
@@ -1034,7 +1035,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (UIntPtr)stop.Length,
             (int*)stridesHandle.Pointer,
             (UIntPtr)strides.Length,
-            stream
+            Stream
         );
         
         return result;
@@ -1048,7 +1049,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<T>();
-        MlxOps.Take(in result.Array.Array, Array.Array, i.Array.Array, stream);
+        MlxOps.Take(in result.Array.Array, Array.Array, i.Array.Array, Stream);
         
         return result;
     }
@@ -1061,7 +1062,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<T>();
-        MlxOps.TakeAxis(in result.Array.Array, Array.Array, i.Array.Array, axis, stream);
+        MlxOps.TakeAxis(in result.Array.Array, Array.Array, i.Array.Array, axis, Stream);
         
         return result;
     }
@@ -1074,7 +1075,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<T>();
-        MlxOps.TakeAlongAxis(in result.Array.Array, Array.Array, i.Array.Array, axis, stream);
+        MlxOps.TakeAlongAxis(in result.Array.Array, Array.Array, i.Array.Array, axis, Stream);
         
         return result;
     }
@@ -1099,7 +1100,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 (UIntPtr)axes.Length,
                 (int*)sliceHandle.Pointer,
                 (UIntPtr)sliceSices.Length,
-                stream
+                Stream
                 );
         
         return result;
@@ -1112,7 +1113,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T>[] Split(int numSplits, int axis)
     {
         using var vec = new ManagedMlxVectorArray<T>();
-        MlxOps.Split(in vec.Vector, Array.Array, numSplits, axis, stream);
+        MlxOps.Split(in vec.Vector, Array.Array, numSplits, axis, Stream);
 
         var result = new Tensor<T>[vec.Size];
         var array = vec.ToArray();
@@ -1137,7 +1138,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 (int*)indicesHandle.Pointer,
                 (UIntPtr)indices.Length,
                 axis,
-                stream
+                Stream
                 );
 
         var result = new Tensor<T>[vec.Size];
@@ -1159,7 +1160,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Sum(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Sum(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.Sum(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1167,7 +1168,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Sum(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.SumAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.SumAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1183,7 +1184,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 (int*)handle.Pointer,
                 (UIntPtr)axes.Length,
                 keepDims,
-                stream
+                Stream
                 );
         
         return result;
@@ -1192,7 +1193,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Min(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Min(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.Min(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1200,7 +1201,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Min(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.MinAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.MinAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1216,7 +1217,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)handle.Pointer,
             (UIntPtr)axes.Length,
             keepDims,
-            stream
+            Stream
             );
         
         return result;
@@ -1225,7 +1226,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Max(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Max(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.Max(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1233,7 +1234,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Max(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.MaxAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.MaxAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1249,7 +1250,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)handle.Pointer,
             (UIntPtr)axes.Length,
             keepDims,
-            stream
+            Stream
         );
         
         return result;
@@ -1258,7 +1259,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Mean(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Mean(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.Mean(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1266,7 +1267,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Mean(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.MeanAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.MeanAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1282,7 +1283,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)handle.Pointer,
             (UIntPtr)axes.Length,
             keepDims,
-            stream
+            Stream
         );
         
         return result;
@@ -1291,7 +1292,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Std(int ddof, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Std(in result.Array.Array, Array.Array, keepDims, ddof, stream);
+        MlxOps.Std(in result.Array.Array, Array.Array, keepDims, ddof, Stream);
         
         return result;
     }
@@ -1299,7 +1300,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Std(int axis, int ddof, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.StdAxis(in result.Array.Array, Array.Array, axis, keepDims, ddof, stream);
+        MlxOps.StdAxis(in result.Array.Array, Array.Array, axis, keepDims, ddof, Stream);
         
         return result;
     }
@@ -1316,7 +1317,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (UIntPtr)axes.Length,
             keepDims,
             ddof,
-            stream
+            Stream
         );
         
         return result;
@@ -1325,7 +1326,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArgMin(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArgMin(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.ArgMin(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1333,7 +1334,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArgMin(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArgMinAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.ArgMinAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1341,7 +1342,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArgMax(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArgMax(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.ArgMax(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1349,7 +1350,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ArgMax(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ArgMaxAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.ArgMaxAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1357,7 +1358,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Variance(bool keepDims, int ddof)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Var(in result.Array.Array, Array.Array, keepDims, ddof, stream);
+        MlxOps.Var(in result.Array.Array, Array.Array, keepDims, ddof, Stream);
         
         return result;
     }
@@ -1369,7 +1370,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> All(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.All(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.All(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1377,7 +1378,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> All(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.AllAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.AllAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1393,7 +1394,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)handle.Pointer,
             (UIntPtr)axes.Length,
             keepDims,
-            stream
+            Stream
         );
         
         return result;
@@ -1402,7 +1403,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Any(bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Any(in result.Array.Array, Array.Array, keepDims, stream);
+        MlxOps.Any(in result.Array.Array, Array.Array, keepDims, Stream);
         
         return result;
     }
@@ -1410,7 +1411,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Any(int axis, bool keepDims = false)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.AnyAxis(in result.Array.Array, Array.Array, axis, keepDims, stream);
+        MlxOps.AnyAxis(in result.Array.Array, Array.Array, axis, keepDims, Stream);
         
         return result;
     }
@@ -1426,7 +1427,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
             (int*)handle.Pointer,
             (UIntPtr)axes.Length,
             keepDims,
-            stream
+            Stream
         );
         
         return result;
@@ -1438,12 +1439,12 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         Tensor<TResult> ifFalse
         ) where TResult : struct
     {
-        if (ifTrue is not MlxTensor<T> ifT)
+        if (ifTrue is not MlxTensor<TResult> ifT)
         {
             throw new TensorCompatibilityException();
         }
         
-        if (ifFalse is not MlxTensor<T> ifF)
+        if (ifFalse is not MlxTensor<TResult> ifF)
         {
             throw new TensorCompatibilityException();
         }
@@ -1454,7 +1455,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
         
         var result = tf.CreateEmpty<TResult>();
-        MlxOps.Where(in result.Array.Array, Array.Array, ifT.Array.Array, ifF.Array.Array, stream);
+        MlxOps.Where(in result.Array.Array, Array.Array, ifT.Array.Array, ifF.Array.Array, Stream);
         
         return result;
     }
@@ -1467,7 +1468,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Minimum(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Minimum(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -1480,7 +1481,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
         }
 
         var result = tf.CreateEmpty<T>();
-        MlxOps.Maximum(in result.Array.Array, Array.Array, o.Array.Array, stream);
+        MlxOps.Maximum(in result.Array.Array, Array.Array, o.Array.Array, Stream);
         
         return result;
     }
@@ -1488,7 +1489,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> TopK(int k)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.TopK(in result.Array.Array, Array.Array, k, stream);
+        MlxOps.TopK(in result.Array.Array, Array.Array, k, Stream);
         
         return result;
     }
@@ -1496,7 +1497,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> TopK(int k, int axis)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.TopKAxis(in result.Array.Array, Array.Array, k, axis, stream);
+        MlxOps.TopKAxis(in result.Array.Array, Array.Array, k, axis, Stream);
         
         return result;
     }
@@ -1508,7 +1509,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ZerosLike()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ZerosLike(in result.Array.Array, Array.Array, stream);
+        MlxOps.ZerosLike(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -1516,7 +1517,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> OnesLike()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.OnesLike(in result.Array.Array, Array.Array, stream);
+        MlxOps.OnesLike(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -1528,7 +1529,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Sigmoid()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Sigmoid(in result.Array.Array, Array.Array, stream);
+        MlxOps.Sigmoid(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -1536,7 +1537,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Softmax(bool precise = true)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Softmax(in result.Array.Array, Array.Array, precise, stream);
+        MlxOps.Softmax(in result.Array.Array, Array.Array, precise, Stream);
         
         return result;
     }
@@ -1544,7 +1545,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Softmax(int axis, bool precise = true)
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.SoftmaxAxis(in result.Array.Array, Array.Array, axis, precise, stream);
+        MlxOps.SoftmaxAxis(in result.Array.Array, Array.Array, axis, precise, Stream);
         
         return result;
     }
@@ -1560,7 +1561,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
                 (int*)handle.Pointer,
                 (UIntPtr)axes.Length,
                 precise,
-                stream
+                Stream
                 );
         
         return result;
@@ -1569,7 +1570,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> Erf()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.Erf(in result.Array.Array, Array.Array, stream);
+        MlxOps.Erf(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }
@@ -1577,7 +1578,7 @@ internal unsafe class MlxTensor<T> : Tensor<T> where T : struct
     public override Tensor<T> ErfInv()
     {
         var result = tf.CreateEmpty<T>();
-        MlxOps.ErfInv(in result.Array.Array, Array.Array, stream);
+        MlxOps.ErfInv(in result.Array.Array, Array.Array, Stream);
         
         return result;
     }

@@ -1,11 +1,25 @@
+using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class Sigmoid<T> : NNModule<T> where T : struct
+public class Sigmoid<T> : INNModule<T> where T : struct
 {
-    public override Tensor<T> Forward(Tensor<T> x)
+    public IEnumerable<Parameter<T>> Parameters
     {
-        return x.Sigmoid();
+        get
+        {
+            yield break;
+        }
+    }
+
+    public Tensor<T> Forward(Tensor<T> input)
+    {
+        return input.Sigmoid();
+    }
+
+    public Tensor<T> Backward(Tensor<T> gradOutput)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -8,16 +8,16 @@ public static class SequentialExtensions
 {
     public static Sequential<T> AddReLU<T>(this Sequential<T> container) where T : struct
     {
-        var tf = container.ServiceProvider.GetRequiredService<IScopedTensorFactory>();
+        var tf = container.ServiceProvider.GetRequiredService<IGlobalTensorFactory>();
         
-        container.Add(new ReLU<T>(tf));
+        container.AddModule(new ReLU<T>(tf));
 
         return container;
     }
 
     public static Sequential<T> AddSigmoid<T>(this Sequential<T> container) where T : struct
     {
-        container.Add(new Sigmoid<T>());
+        container.AddModule(new Sigmoid<T>());
         
         return container;
     }
@@ -26,13 +26,13 @@ public static class SequentialExtensions
         (
         this Sequential<T> container,
         int inputFeatures,
-        int outputFeatures
+        int outputFeatures,
+        string? name = null
         ) where T : struct
     {
         var gtf = container.ServiceProvider.GetRequiredService<IGlobalTensorFactory>();
-        var tf = container.ServiceProvider.GetRequiredService<IScopedTensorFactory>();
         
-        container.Add(new Linear<T>(gtf, tf, inputFeatures, outputFeatures));
+        container.AddModule(new Linear<T>(gtf, inputFeatures, outputFeatures, name ?? Guid.NewGuid().ToString()));
         
         return container;
     }
