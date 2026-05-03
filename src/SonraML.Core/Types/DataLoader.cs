@@ -18,7 +18,7 @@ public abstract class DataLoader<TData> where TData : class
             prefetchTask = null;
         }
 
-        var amountMissing = data.Count - batchSize;
+        var amountMissing = batchSize - data.Count;
         if (amountMissing > 0)
         {
             var missing = await Load(amountMissing);
@@ -35,7 +35,7 @@ public abstract class DataLoader<TData> where TData : class
 
     private async Task ExecutePrefetch(int batchSize)
     {
-        var result = await GetData(batchSize);
+        var result = await Load(batchSize);
         data.AddRange(result);
     }
 }

@@ -29,12 +29,15 @@ public class TestRunner : SonraRunner
         }
 
         var data = await context.DataLoader.GetData(100);
-        var inputs = data.Inputs
+        context.DataLoader.Prefetch(100);
+        var inputs = data
+            .Select(d => d.Input)
             .Select(i => tf.FromArray(i, new([i.Length])))
             .ToArray();
         var input = tf.Stack(inputs, 0, null);
         
-        var outputs = data.ExpectedOutputs
+        var outputs = data
+            .Select(d => d.ExpectedOutputs)
             .Select(o => tf.FromArray(o, new([o.Length])))
             .ToArray();
         var output = tf.Stack(outputs, 0, null);
