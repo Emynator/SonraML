@@ -199,6 +199,14 @@ internal class MlxTensorFactory : IGlobalTensorFactory, IScopedTensorFactory
             throw new TensorTypeNotSupportedException(typeof(T));
         }
 
+        if (array.Length != shape.Size)
+        {
+            throw new BackendOperationException
+            (
+                $"Array length {array.Length} does not match tensor shape size {shape.Size}."
+            );
+        }
+
         tlock.Wait();
             
         if (array is Memory<bool> boolArray)

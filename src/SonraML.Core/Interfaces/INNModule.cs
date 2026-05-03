@@ -9,4 +9,8 @@ public interface INNModule<T> where T : struct
     public Tensor<T> Forward(Tensor<T> input);
     
     public Tensor<T> Backward(Tensor<T> gradOutput);
+
+    public Task Save(string filePath);
+
+    public Task Load(string filePath);
 }

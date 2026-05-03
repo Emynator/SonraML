@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SonraML.Core.Extensions;
 using SonraML.Core.Interfaces;
 using SonraML.Core.Types;
@@ -6,16 +7,18 @@ namespace SonraML.Core.NN;
 
 public class Linear<T> : INNModule<T> where T : struct
 {
+    private readonly bool canSave = true;
     private readonly Parameter<T> weights;
     private readonly Parameter<T> biases;
     private Tensor<T>? cachedInput;
 
     public Linear
         (
+        ILogger<Linear<T>> logger,
         IGlobalTensorFactory gtf,
         int inputFeatures,
         int outputFeatures,
-        string name
+        string? name
         )
     {
         var weightShape = new TensorShape([inputFeatures, outputFeatures]);
@@ -23,6 +26,12 @@ public class Linear<T> : INNModule<T> where T : struct
         for (var i = 0; i < weightShape.Size; i++)
         {
             weightArray[i] = Random.Shared.NextSingle() * 10.0f - 5.0f;
+        }
+
+        if (name is null)
+        {
+            name = "";
+            canSave = false;
         }
         
         var w = gtf.FromArray(weightArray, weightShape).ConvertTo<T>();
@@ -70,5 +79,21 @@ public class Linear<T> : INNModule<T> where T : struct
         var gradInput = gradOutput.MatMul(weightsTransposed);
 
         return gradInput;
+    }
+
+    public async Task Save(string filePath)
+    {
+        if (!canSave)
+        {
+            return;
+        }
+    }
+
+    public async Task Load(string filePath)
+    {
+        if (!canSave)
+        {
+            return;
+        }
     }
 }

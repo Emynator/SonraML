@@ -167,7 +167,7 @@ internal class ProxyTensor<T> : Tensor<T> where T : struct
             tlock.Release();
             throw new BackendOperationException(error.Message);
         }
-
+    
         if (result is not ToStringResponse stringResponse)
         {
             tlock.Release();

@@ -22,4 +22,12 @@ public class Sigmoid<T> : INNModule<T> where T : struct
     {
         throw new NotImplementedException();
     }
+
+    public async Task Save(string filePath)
+    {
+    }
+
+    public async Task Load(string filePath)
+    {
+    }
 }

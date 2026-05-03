@@ -852,7 +852,7 @@ internal unsafe class MlxTensor : IDisposable
     {
         using var handle = shape.Shape.AsMemory().Pin();
         var result = tm.CreateEmpty();
-        MlxOps.Reshape(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Size, stream);
+        MlxOps.Reshape(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Dimensions, stream);
         
         return result;
     }
@@ -893,7 +893,7 @@ internal unsafe class MlxTensor : IDisposable
     {
         using var handle = shape.Shape.AsMemory().Pin();
         var result = tm.CreateEmpty();
-        MlxOps.BroadcastTo(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Size, stream);
+        MlxOps.BroadcastTo(in result.Array.Array, Array.Array, (int*)handle.Pointer, (UIntPtr)shape.Dimensions, stream);
         
         return result;
     }

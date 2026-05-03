@@ -5,7 +5,7 @@ using SonraML.Core.Types;
 
 namespace SonraTest;
 
-public class TestRunner : ISonraRunner
+public class TestRunner : SonraRunner
 {
     public static Tensor<float>? Tensor;
 
@@ -17,25 +17,18 @@ public class TestRunner : ISonraRunner
     {
         this.logger = logger;
         this.tf = tf;
-        optimizer = new(tf, 0.001f);
+        optimizer = new(tf, 0.0001f);
     }
 
-    public ISonraRunnerContext Context { get; set; } = null!;
-
-    public async Task Run(CancellationToken ct)
+    public override async Task Run(CancellationToken ct)
     {
-        logger.LogInformation("{time} - Starting new Epoch.", DateTime.Now);
-        
         var context = Context as TestRunnerContext;
         if (context is null)
         {
             throw new InvalidOperationException("Context is null!");
         }
 
-        logger.LogInformation("Loading batch...");
         var data = await context.DataLoader.GetData(100);
-        logger.LogInformation("{time} - Batch loaded.", DateTime.Now);
-
         var inputs = data.Inputs
             .Select(i => tf.FromArray(i, new([i.Length])))
             .ToArray();
@@ -47,7 +40,6 @@ public class TestRunner : ISonraRunner
         var output = tf.Stack(outputs, 0, null);
         
         var result = context.Module.Forward(input);
-        logger.LogInformation("{time} - Forward pass done.", DateTime.Now);
         
         var error = Losses.MeanSquaredError
         (
@@ -61,9 +53,8 @@ public class TestRunner : ISonraRunner
         
         var res = context.Module.Backward(gradient);
         res.EnsureCompute();
-        logger.LogInformation("{time} - Backprop done.", DateTime.Now);
 
         optimizer.Step(context.Module.Parameters);
-        logger.LogInformation("{time} - Epoch done. Error: {Error}", DateTime.Now, errorString);
+        logger.LogInformation("Error: {Error}", errorString);
     }
 }

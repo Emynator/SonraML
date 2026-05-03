@@ -39,4 +39,12 @@ public class ReLU<T> : INNModule<T> where T : struct
 
         return mask.Where(gradOutput, zeros);
     }
+
+    public async Task Save(string filePath)
+    {
+    }
+
+    public async Task Load(string filePath)
+    {
+    }
 }

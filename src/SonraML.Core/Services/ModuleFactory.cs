@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using SonraML.Core.Interfaces;
 using SonraML.Core.NN;
 
 namespace SonraML.Core.Services;
@@ -6,7 +8,7 @@ public class ModuleFactory
 {
     private readonly IServiceProvider serviceProvider;
 
-    ModuleFactory(IServiceProvider serviceProvider)
+    public ModuleFactory(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }
@@ -16,5 +18,13 @@ public class ModuleFactory
         var module = new Sequential<T>(serviceProvider);
         
         return module;
+    }
+
+    public SgdOptimizer<T> CreateSgdOptimizer<T>(T learningRate) where T : struct
+    {
+        var tf = serviceProvider.GetRequiredService<IScopedTensorFactory>();
+        var optimizer = new SgdOptimizer<T>(tf, learningRate);
+        
+        return optimizer;
     }
 }

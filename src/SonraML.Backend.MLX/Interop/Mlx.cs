@@ -10,7 +10,7 @@ internal static unsafe partial class Mlx
     [LibraryImport("mlxc", EntryPoint = "mlx_set_error_handler")]
     public static partial void SetErrorHandler
         (
-        delegate*<string, void*, void> handler,
+        delegate*<byte*, void*, void> handler,
         void* data,
         delegate*<void*, void> dtor
         );

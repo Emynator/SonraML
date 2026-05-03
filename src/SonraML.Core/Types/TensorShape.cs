@@ -7,9 +7,9 @@ public class TensorShape : IEquatable<TensorShape>, IComparable<TensorShape>
         Shape = shape;
     }
     
-    public int[] Shape { get; init; }
+    public int[] Shape { get; }
     
-    public int Size => Shape.Sum();
+    public int Size => Shape.Aggregate(1, (size, dim) => size * dim);
     
     public int Dimensions => Shape.Length;
 
