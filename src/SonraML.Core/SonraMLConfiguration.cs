@@ -39,7 +39,7 @@ public static class SonraMLConfiguration
 
     public static IHost InitSonraML(this IHost host, BackendDeviceType deviceType)
     {
-        var backend = host.Services.GetRequiredService<ISonraMLBackend>();
+        var backend = host.Services.GetRequiredService<ISonraBackend>();
         backend.Init(deviceType);
 
         return host;

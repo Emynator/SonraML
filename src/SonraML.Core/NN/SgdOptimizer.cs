@@ -3,7 +3,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class SgdOptimizer<T> : IOptimizer<T> where T : struct
+public sealed class SgdOptimizer<T> : IOptimizer<T> where T : struct
 {
     private readonly Tensor<T> learningRate;
     

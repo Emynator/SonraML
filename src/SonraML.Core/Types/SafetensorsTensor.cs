@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SonraML.Core.Types;
 
-public record SafetensorsTensor
+public sealed record class SafetensorsTensor
     (
     [property: JsonPropertyName("dtype")] string DataType,
     [property: JsonPropertyName("shape")] int[] Shape,

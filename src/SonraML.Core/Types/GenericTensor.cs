@@ -4,7 +4,7 @@ public abstract class GenericTensor
 {
     public string Name { get; init; }
 
-    public Type Type { get; init; }
+    public abstract Type Type { get; }
     
     public virtual TensorShape Shape { get; }
 

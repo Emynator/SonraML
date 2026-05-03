@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using SonraML.Backend.MLX.ExecutionManagement;
 using SonraML.Backend.MLX.Interop.Enums;
 using SonraML.Core.Exceptions;

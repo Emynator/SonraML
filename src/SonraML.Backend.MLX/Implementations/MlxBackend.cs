@@ -4,7 +4,7 @@ using SonraML.Core.Interfaces;
 
 namespace SonraML.Backend.MLX.Implementations;
 
-internal class MlxBackend : ISonraMLBackend
+internal class MlxBackend : ISonraBackend
 {
     private readonly MlxBackendGlobals globals;
     private readonly MlxScheduler scheduler;

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SonraML.Core.Config;
 
-public class SonraRunnerConfigurations
+public sealed class SonraRunnerConfigurations
 {
     public List<SonraRunnerConfiguration> Configurations { get; set; } = [];
 }

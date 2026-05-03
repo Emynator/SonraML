@@ -10,7 +10,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.Services;
 
-public class SonraWorker : BackgroundService
+internal class SonraWorker : BackgroundService
 {
     private readonly ILogger<SonraWorker> logger;
     private readonly IServiceProvider serviceProvider;

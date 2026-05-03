@@ -3,7 +3,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class Sigmoid<T> : INNModule<T> where T : struct
+public sealed class Sigmoid<T> : INNModule<T> where T : struct
 {
     public IEnumerable<Parameter<T>> Parameters
     {

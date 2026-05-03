@@ -10,6 +10,8 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
     #region Properties
 
     public override TensorShape Shape => shape ?? throw new InvalidOperationException("Shape is not set.");
+    
+    public override Type Type => typeof(T);
 
     public int Size => Shape.Size;
 

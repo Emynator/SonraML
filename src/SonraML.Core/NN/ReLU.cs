@@ -3,7 +3,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class ReLU<T> : INNModule<T> where T : struct
+public sealed class ReLU<T> : INNModule<T> where T : struct
 {
     private readonly Tensor<T> zero;
     private Tensor<bool>? mask;

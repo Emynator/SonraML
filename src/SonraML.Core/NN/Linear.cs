@@ -5,7 +5,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class Linear<T> : INNModule<T> where T : struct
+public sealed class Linear<T> : INNModule<T> where T : struct
 {
     private readonly bool canSave = true;
     private readonly Parameter<T> weights;

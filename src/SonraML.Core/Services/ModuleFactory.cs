@@ -4,7 +4,7 @@ using SonraML.Core.NN;
 
 namespace SonraML.Core.Services;
 
-public class ModuleFactory
+public sealed class ModuleFactory
 {
     private readonly IServiceProvider serviceProvider;
 

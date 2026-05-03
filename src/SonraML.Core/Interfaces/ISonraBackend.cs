@@ -2,7 +2,7 @@ using SonraML.Core.Enums;
 
 namespace SonraML.Core.Interfaces;
 
-public interface ISonraMLBackend : IDisposable
+public interface ISonraBackend : IDisposable
 {
     public void Init(BackendDeviceType type);
 }

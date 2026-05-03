@@ -1,6 +1,6 @@
 namespace SonraML.Core.Types;
 
-public class TensorShape : IEquatable<TensorShape>, IComparable<TensorShape>
+public sealed class TensorShape : IEquatable<TensorShape>, IComparable<TensorShape>
 {
     public TensorShape(int[] shape)
     {

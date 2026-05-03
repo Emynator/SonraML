@@ -1,6 +1,6 @@
 namespace SonraML.Backend.MLX.Managed;
 
-public unsafe class MlxArrayBoolEnumerator : IEnumerator<bool>
+internal unsafe class MlxArrayBoolEnumerator : IEnumerator<bool>
 {
     private readonly byte* nativePtr;
     private readonly UIntPtr size;

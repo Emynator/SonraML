@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace SonraML.Backend.MLX.Managed;
 
-public unsafe class MlxArrayEnumerator<T> : IEnumerator<T> where T : struct
+internal unsafe class MlxArrayEnumerator<T> : IEnumerator<T> where T : struct
 {
     private readonly T* nativePtr;
     private readonly UIntPtr size;

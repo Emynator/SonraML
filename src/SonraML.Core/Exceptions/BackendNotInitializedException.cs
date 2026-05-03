@@ -1,6 +1,6 @@
 namespace SonraML.Core.Exceptions;
 
-public class BackendNotInitializedException : SonraMLBackendException
+public sealed class BackendNotInitializedException : SonraMLBackendException
 {
     public BackendNotInitializedException() : base("Backend is not initialized.")
     {

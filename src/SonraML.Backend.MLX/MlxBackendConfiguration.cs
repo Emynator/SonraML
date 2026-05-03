@@ -11,7 +11,7 @@ public static class MlxBackendConfiguration
     public static void UseMlxBackend(IHostApplicationBuilder builder)
     {
         builder.Services
-            .AddSingleton<ISonraMLBackend, MlxBackend>()
+            .AddSingleton<ISonraBackend, MlxBackend>()
             .AddSingleton<MlxBackendGlobals>()
             .AddSingleton<IGlobalTensorFactory, MlxTensorFactory>()
             .AddSingleton<MlxScheduler>()

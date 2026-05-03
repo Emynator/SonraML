@@ -3,7 +3,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public class Sequential<T> : NNContainer<T> where T : struct
+public sealed class Sequential<T> : NNContainer<T> where T : struct
 {
     private readonly List<INNModule<T>> modules = [];
 

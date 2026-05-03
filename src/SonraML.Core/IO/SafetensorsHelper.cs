@@ -1,6 +1,6 @@
 namespace SonraML.Core.IO;
 
-public class SafetensorsHelper
+public static class SafetensorsHelper
 {
     public static readonly Dictionary<string, Type> DtypeToType = new()
     {
