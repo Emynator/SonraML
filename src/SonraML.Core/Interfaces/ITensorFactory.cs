@@ -4,7 +4,7 @@ namespace SonraML.Core.Interfaces;
 
 public interface ITensorFactory : IDisposable
 {
-    public bool IsTypeSupported<T>();
+    public bool IsTypeSupported<T>() where T : struct;
     
     public Tensor<T> Zero<T>(TensorShape shape, string? name = null) where T : struct;
 

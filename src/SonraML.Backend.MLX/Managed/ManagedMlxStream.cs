@@ -1,16 +1,17 @@
 using SonraML.Backend.MLX.Interop;
+using SonraML.Backend.MLX.Interop.Enums;
 using SonraML.Core.Enums;
 
 namespace SonraML.Backend.MLX.Managed;
 
 internal class ManagedMlxStream : IDisposable
 {
-    public ManagedMlxStream(BackendDeviceType type)
+    public ManagedMlxStream(MlxDeviceType type)
     {
         Stream = type switch
         {
-            BackendDeviceType.Cpu => MlxStream.DefaultCpuStreamNew(),
-            BackendDeviceType.Gpu => MlxStream.DefaultGpuStreamNew(),
+            MlxDeviceType.Cpu => MlxStream.DefaultCpuStreamNew(),
+            MlxDeviceType.Gpu => MlxStream.DefaultGpuStreamNew(),
             _ => throw new InvalidOperationException(),
         };
     }

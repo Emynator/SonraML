@@ -2,8 +2,6 @@ namespace SonraML.Core.Types;
 
 public abstract class GenericTensor
 {
-    protected bool isReleased = false;
-    
     public string Name { get; init; }
 
     public Type Type { get; init; }
@@ -20,6 +18,4 @@ public abstract class GenericTensor
 
         return result;
     }
-
-    public abstract void Release();
 }

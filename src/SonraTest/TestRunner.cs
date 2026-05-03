@@ -57,11 +57,13 @@ public class TestRunner : ISonraRunner
             out var gradient
         );
         gradient.EnsureCompute();
+        var errorString = error.ToString();
+        
         var res = context.Module.Backward(gradient);
         res.EnsureCompute();
         logger.LogInformation("{time} - Backprop done.", DateTime.Now);
 
         optimizer.Step(context.Module.Parameters);
-        logger.LogInformation("{time} - Epoch done. Error: {Error}", DateTime.Now, error);
+        logger.LogInformation("{time} - Epoch done. Error: {Error}", DateTime.Now, errorString);
     }
 }

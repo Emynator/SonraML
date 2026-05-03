@@ -262,7 +262,7 @@ public abstract class Tensor<T> : GenericTensor, IEquatable<Tensor<T>>, ICloneab
 
     public abstract Tensor<T> MatMul(Tensor<T> other);
 
-    public abstract Tensor<T> Fma(Tensor<T> a, Tensor<T> c, float alpha = 1.0f, float beta = 1.0f);
+    public abstract Tensor<T> Fma(Tensor<T> b, Tensor<T> c, float alpha = 1.0f, float beta = 1.0f);
 
     public abstract Tensor<T> Transpose();
 

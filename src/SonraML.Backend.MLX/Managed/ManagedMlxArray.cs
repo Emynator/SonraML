@@ -5,260 +5,172 @@ using SonraML.Core.Types;
 
 namespace SonraML.Backend.MLX.Managed;
 
-internal unsafe class ManagedMlxArray<T> : IDisposable where T : struct
+internal unsafe class ManagedMlxArray : IDisposable
 {
     public MlxArray Array;
-    
+
     public ManagedMlxArray()
     {
         Array = MlxArray.New();
     }
-    
-    public ManagedMlxArray(Memory<T> array, TensorShape shape)
+
+    public ManagedMlxArray(Memory<bool> array, TensorShape shape)
     {
         using var arrayHandle = array.Pin();
         using var shapeHandle = shape.Shape.AsMemory().Pin();
         var shapePtr = (int*)shapeHandle.Pointer;
-        
-        if (typeof(T) == typeof(bool))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Bool);
-            return;
-        }
-
-        if (typeof(T) == typeof(byte))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt8);
-            return;
-        }
-
-        if (typeof(T) == typeof(ushort))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt16);
-            return;
-        }
-
-        if (typeof(T) == typeof(uint))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt32);
-            return;
-        }
-
-        if (typeof(T) == typeof(ulong))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt64);
-            return;
-        }
-
-        if (typeof(T) == typeof(sbyte))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int8);
-            return;
-        }
-
-        if (typeof(T) == typeof(short))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int16);
-            return;
-        }
-
-        if (typeof(T) == typeof(int))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int32);
-            return;
-        }
-
-        if (typeof(T) == typeof(long))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int64);
-            return;
-        }
-
-        if (typeof(T) == typeof(Half))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float16);
-            return;
-        }
-
-        if (typeof(T) == typeof(float))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float32);
-            return;
-        }
-
-        if (typeof(T) == typeof(double))
-        {
-            Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float64);
-            return;
-        }
-        
-        throw new TensorTypeNotSupportedException(typeof(T));
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Bool);
     }
 
-    public ManagedMlxArray(T scalar)
+    public ManagedMlxArray(Memory<byte> array, TensorShape shape)
     {
-        if (scalar is bool boolValue)
-        {
-            Array = MlxArray.NewBool(boolValue);
-            return;
-        }
-
-        if (scalar is byte byteValue)
-        {
-            Array = MlxArray.NewData(&byteValue, null, 0, DType.UInt8);
-            return;
-        }
-
-        if (scalar is ushort ushortValue)
-        {
-            Array = MlxArray.NewData(&ushortValue, null, 0, DType.UInt16);
-            return;
-        }
-
-        if (scalar is uint uintValue)
-        {
-            Array = MlxArray.NewData(&uintValue, null, 0, DType.UInt32);
-            return;
-        }
-
-        if (scalar is ulong ulongValue)
-        {
-            Array = MlxArray.NewData(&ulongValue, null, 0, DType.UInt64);
-            return;
-        }
-
-        if (scalar is sbyte sbyteValue)
-        {
-            Array = MlxArray.NewData(&sbyteValue, null, 0, DType.Int8);
-            return;
-        }
-
-        if (scalar is short shortValue)
-        {
-            Array = MlxArray.NewData(&shortValue, null, 0, DType.Int16);
-            return;
-        }
-        
-        if (scalar is int intValue)
-        {
-            Array = MlxArray.NewInt(intValue);
-            return;
-        }
-
-        if (scalar is long longValue)
-        {
-            Array = MlxArray.NewData(&longValue, null, 0, DType.Int64);
-            return;
-        }
-
-        if (scalar is Half halfValue)
-        {
-            Array = MlxArray.NewData(&halfValue, null, 0, DType.Float16);
-            return;
-        }
-
-        if (scalar is float floatValue)
-        {
-            Array = MlxArray.NewFloat32(floatValue);
-            return;
-        }
-
-        if (scalar is double doubleValue)
-        {
-            Array = MlxArray.NewFloat64(doubleValue);
-            return;
-        }
-        
-        throw new TensorTypeNotSupportedException(typeof(T));
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt8);
     }
-    
-    public ManagedMlxArray(bool isZero)
+
+    public ManagedMlxArray(Memory<ushort> array, TensorShape shape)
     {
-        if (typeof(T) == typeof(bool))
-        {
-            Array = MlxArray.NewBool(isZero);
-            return;
-        }
-
-        if (typeof(T) == typeof(byte))
-        {
-            byte value = (byte)(isZero ? 0 : 1);
-            Array = MlxArray.NewData(&value, null, 0, DType.UInt8);
-            return;
-        }
-
-        if (typeof(T) == typeof(ushort))
-        {
-            ushort value = (ushort)(isZero ? 0 : 1);
-            Array = MlxArray.NewData(&value, null, 0, DType.UInt16);
-            return;
-        }
-
-        if (typeof(T) == typeof(uint))
-        {
-            uint value = (uint)(isZero ? 0 : 1);
-            Array = MlxArray.NewData(&value, null, 0, DType.UInt32);
-            return;
-        }
-
-        if (typeof(T) == typeof(ulong))
-        {
-            ulong value = (ulong)(isZero ? 0 : 1);
-            Array = MlxArray.NewData(&value, null, 0, DType.UInt64);
-            return;
-        }
-
-        if (typeof(T) == typeof(sbyte))
-        {
-            sbyte value = (sbyte)(isZero ? 0 : 1);
-            Array = MlxArray.NewData(&value, null, 0, DType.Int8);
-            return;
-        }
-
-        if (typeof(T) == typeof(short))
-        {
-            short value = (short)(isZero ? 0 : 1);
-            Array = MlxArray.NewData(&value, null, 0, DType.Int16);
-            return;
-        }
-
-        if (typeof(T) == typeof(int))
-        {
-            var value = isZero ? 0 : 1;
-            Array = MlxArray.NewInt(value);
-            return;
-        }
-
-        if (typeof(T) == typeof(long))
-        {
-            long value = isZero ? 0 : 1;
-            Array = MlxArray.NewData(&value, null, 0, DType.Int64);
-            return;
-        }
-
-        if (typeof(T) == typeof(Half))
-        {
-            Half value = (Half)(isZero ? 0.0f : 1.0f);
-            Array = MlxArray.NewData(&value, null, 0, DType.Float16);
-            return;
-        }
-
-        if (typeof(T) == typeof(float))
-        {
-            float value = isZero ? 0.0f : 1.0f;
-            Array = MlxArray.NewFloat32(value);
-            return;
-        }
-
-        if (typeof(T) == typeof(double))
-        {
-            double value = isZero ? 0.0d : 1.0d;
-            Array = MlxArray.NewFloat64(value);
-            return;
-        }
-        
-        throw new TensorTypeNotSupportedException(typeof(T));
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt16);
     }
+
+    public ManagedMlxArray(Memory<uint> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt32);
+    }
+
+    public ManagedMlxArray(Memory<ulong> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.UInt64);
+    }
+
+    public ManagedMlxArray(Memory<sbyte> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int8);
+    }
+
+    public ManagedMlxArray(Memory<short> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int16);
+    }
+
+    public ManagedMlxArray(Memory<int> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int32);
+    }
+
+    public ManagedMlxArray(Memory<long> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Int64);
+    }
+
+    public ManagedMlxArray(Memory<Half> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float16);
+    }
+
+    public ManagedMlxArray(Memory<float> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float32);
+    }
+
+    public ManagedMlxArray(Memory<double> array, TensorShape shape)
+    {
+        using var arrayHandle = array.Pin();
+        using var shapeHandle = shape.Shape.AsMemory().Pin();
+        var shapePtr = (int*)shapeHandle.Pointer;
+        Array = MlxArray.NewData(arrayHandle.Pointer, shapePtr, shape.Dimensions, DType.Float64);
+    }
+
+    public ManagedMlxArray(bool scalar)
+    {
+        Array = MlxArray.NewBool(scalar);
+    }
+
+    public ManagedMlxArray(byte scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.UInt8);
+    }
+
+    public ManagedMlxArray(ushort scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.UInt16);
+    }
+
+    public ManagedMlxArray(uint scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.UInt32);
+    }
+
+    public ManagedMlxArray(ulong scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.UInt64);
+    }
+
+    public ManagedMlxArray(sbyte scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.Int8);
+    }
+
+    public ManagedMlxArray(short scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.Int16);
+    }
+
+    public ManagedMlxArray(int scalar)
+    {
+        Array = MlxArray.NewInt(scalar);
+    }
+
+    public ManagedMlxArray(long scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.Int64);
+    }
+
+    public ManagedMlxArray(Half scalar)
+    {
+        Array = MlxArray.NewData(&scalar, null, 0, DType.Float16);
+    }
+
+    public ManagedMlxArray(float scalar)
+    {
+        Array = MlxArray.NewFloat32(scalar);
+    }
+
+    public ManagedMlxArray(double scalar)
+    {
+        Array = MlxArray.NewFloat64(scalar);
+    }
+
+    public DType Type => MlxArray.DType(Array);
 
     public void Dispose()
     {
@@ -272,7 +184,7 @@ internal unsafe class ManagedMlxArray<T> : IDisposable where T : struct
         return result;
     }
 
-    public void CopyFrom(ManagedMlxArray<T> array)
+    public void CopyFrom(ManagedMlxArray array)
     {
         MlxArray.Set(in Array, array.Array);
     }
@@ -280,7 +192,7 @@ internal unsafe class ManagedMlxArray<T> : IDisposable where T : struct
     public TensorShape GetShape()
     {
         Eval();
-        
+
         var shape = MlxArray.Shape(Array);
         var length = MlxArray.NDim(Array);
         var result = new int[length];
@@ -288,330 +200,363 @@ internal unsafe class ManagedMlxArray<T> : IDisposable where T : struct
         {
             result[i] = shape[i];
         }
-        
+
         return new TensorShape(result);
     }
 
-    public T GetScalar()
+    public bool GetBoolScalar()
     {
         Eval();
+        MlxArray.ItemBool(out var res, Array);
         
-        if (typeof(T) == typeof(bool))
-        {
-            MlxArray.ItemBool(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(byte))
-        {
-            MlxArray.ItemUInt8(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(ushort))
-        {
-            MlxArray.ItemUInt16(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(uint))
-        {
-            MlxArray.ItemUInt32(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(ulong))
-        {
-            MlxArray.ItemUInt64(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(sbyte))
-        {
-            MlxArray.ItemInt8(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(short))
-        {
-            MlxArray.ItemInt16(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(int))
-        {
-            MlxArray.ItemInt32(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(long))
-        {
-            MlxArray.ItemInt64(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(Half))
-        {
-            MlxArray.ItemFloat16(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(float))
-        {
-            MlxArray.ItemFloat32(out var res, Array);
-            return (T)(object)res;
-        }
-
-        if (typeof(T) == typeof(double))
-        {
-            MlxArray.ItemFloat64(out var res, Array);
-            return (T)(object)res;
-        }
-        
-        throw new TensorTypeNotSupportedException(typeof(T));
+        return res;
     }
 
-    public T[] GetData()
+    public byte GetByteScalar()
+    {
+        Eval();
+        MlxArray.ItemUInt8(out var res, Array);
+        
+        return res;
+    }
+
+    public ushort GetUShortScalar()
+    {
+        Eval();
+        MlxArray.ItemUInt16(out var res, Array);
+        
+        return res;
+    }
+
+    public uint GetUIntScalar()
+    {
+        Eval();
+        MlxArray.ItemUInt32(out var res, Array);
+        
+        return res;
+    }
+
+    public ulong GetULongScalar()
+    {
+        Eval();
+        MlxArray.ItemUInt64(out var res, Array);
+        
+        return res;
+    }
+
+    public sbyte GetSByteScalar()
+    {
+        Eval();
+        MlxArray.ItemInt8(out var res, Array);
+        
+        return res;
+    }
+
+    public short GetShortScalar()
+    {
+        Eval();
+        MlxArray.ItemInt16(out var res, Array);
+        
+        return res;
+    }
+
+    public int GetIntScalar()
+    {
+        Eval();
+        MlxArray.ItemInt32(out var res, Array);
+        
+        return res;
+    }
+
+    public long GetLongScalar()
+    {
+        Eval();
+        MlxArray.ItemInt64(out var res, Array);
+        
+        return res;
+    }
+
+    public Half GetHalfScalar()
+    {
+        Eval();
+        MlxArray.ItemFloat16(out var res, Array);
+        
+        return (Half)res;
+    }
+
+    public float GetFloatScalar()
+    {
+        Eval();
+        MlxArray.ItemFloat32(out var res, Array);
+        
+        return res;
+    }
+
+    public double GetDoubleScalar()
+    {
+        Eval();
+        MlxArray.ItemFloat64(out var res, Array);
+        
+        return res;
+    }
+
+    public bool[] GetBoolData()
     {
         Eval();
         var size = MlxArray.Size(Array);
-        
-        if (typeof(T) == typeof(bool))
+        var res = new bool[size];
+        var ptr = MlxArray.DataBool(Array);
+        for (UIntPtr i = 0; i < size; i++)
         {
-            bool[] res = new bool[size];
-            var ptr = MlxArray.DataBool(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i] != 0;
-            }
-            
-            return (T[])(object)res;
+            res[i] = ptr[i] != 0;
         }
 
-        if (typeof(T) == typeof(byte))
-        {
-            byte[] res = new byte[size];
-            var ptr = MlxArray.DataUInt8(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(ushort))
-        {
-            ushort[] res = new ushort[size];
-            var ptr = MlxArray.DataUInt16(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(uint))
-        {
-            uint[] res = new uint[size];
-            var ptr = MlxArray.DataUInt32(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(ulong))
-        {
-            ulong[] res = new ulong[size];
-            var ptr = MlxArray.DataUInt64(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(sbyte))
-        {
-            sbyte[] res = new sbyte[size];
-            var ptr = MlxArray.DataInt8(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(short))
-        {
-            short[] res = new short[size];
-            var ptr = MlxArray.DataInt16(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(int))
-        {
-            int[] res = new int[size];
-            var ptr = MlxArray.DataInt32(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(long))
-        {
-            long[] res = new long[size];
-            var ptr = MlxArray.DataInt64(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(Half))
-        {
-            Half[] res = new Half[size];
-            var ptr = (Half*)MlxArray.DataFloat16(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(float))
-        {
-            float[] res = new float[size];
-            var ptr = MlxArray.DataFloat32(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-
-        if (typeof(T) == typeof(double))
-        {
-            double[] res = new double[size];
-            var ptr = MlxArray.DataFloat64(Array);
-            for (UIntPtr i = 0; i < size; i++)
-            {
-                res[i] = ptr[i];
-            }
-            
-            return (T[])(object)res;
-        }
-        
-        throw new TensorTypeNotSupportedException(typeof(T));
+        return res;
     }
 
-    public IEnumerator<T> GetEnumerator()
+    public byte[] GetByteData()
     {
         Eval();
         var size = MlxArray.Size(Array);
-        
+        var res = new byte[size];
+        var ptr = MlxArray.DataUInt8(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public ushort[] GetUShortData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new ushort[size];
+        var ptr = MlxArray.DataUInt16(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public uint[] GetUIntData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new uint[size];
+        var ptr = MlxArray.DataUInt32(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public ulong[] GetULongData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new ulong[size];
+        var ptr = MlxArray.DataUInt64(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public sbyte[] GetSByteData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new sbyte[size];
+        var ptr = MlxArray.DataInt8(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public short[] GetShortData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new short[size];
+        var ptr = MlxArray.DataInt16(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public int[] GetIntData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new int[size];
+        var ptr = MlxArray.DataInt32(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public long[] GetLongData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new long[size];
+        var ptr = MlxArray.DataInt64(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public Half[] GetHalfData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new Half[size];
+        var ptr = (Half*)MlxArray.DataFloat16(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public float[] GetFloatData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new float[size];
+        var ptr = MlxArray.DataFloat32(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public double[] GetDoubleData()
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+        var res = new double[size];
+        var ptr = MlxArray.DataFloat64(Array);
+        for (UIntPtr i = 0; i < size; i++)
+        {
+            res[i] = ptr[i];
+        }
+
+        return res;
+    }
+
+    public IEnumerator<T> GetEnumerator<T>() where T : struct
+    {
+        Eval();
+        var size = MlxArray.Size(Array);
+
         if (typeof(T) == typeof(bool))
         {
             var ptr = MlxArray.DataBool(Array);
-            
+
             return new MlxArrayBoolEnumerator(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(byte))
         {
             var ptr = MlxArray.DataUInt8(Array);
-            
+
             return new MlxArrayEnumerator<byte>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(ushort))
         {
             var ptr = MlxArray.DataUInt16(Array);
-            
+
             return new MlxArrayEnumerator<ushort>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(uint))
         {
             var ptr = MlxArray.DataUInt32(Array);
-            
+
             return new MlxArrayEnumerator<uint>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(ulong))
         {
             var ptr = MlxArray.DataUInt64(Array);
-            
+
             return new MlxArrayEnumerator<ulong>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(sbyte))
         {
             var ptr = MlxArray.DataInt8(Array);
-            
+
             return new MlxArrayEnumerator<sbyte>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(short))
         {
             var ptr = MlxArray.DataInt16(Array);
-            
+
             return new MlxArrayEnumerator<short>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(int))
         {
             var ptr = MlxArray.DataInt32(Array);
-            
+
             return new MlxArrayEnumerator<int>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(long))
         {
             var ptr = MlxArray.DataInt64(Array);
-            
+
             return new MlxArrayEnumerator<long>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(Half))
         {
             var ptr = (Half*)MlxArray.DataFloat16(Array);
-            
+
             return new MlxArrayEnumerator<Half>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(float))
         {
             var ptr = MlxArray.DataFloat32(Array);
-            
+
             return new MlxArrayEnumerator<float>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
 
         if (typeof(T) == typeof(double))
         {
             var ptr = MlxArray.DataFloat64(Array);
-            
+
             return new MlxArrayEnumerator<double>(ptr, size) as IEnumerator<T> ?? throw new InvalidOperationException();
         }
-        
+
         throw new TensorTypeNotSupportedException(typeof(T));
     }
 

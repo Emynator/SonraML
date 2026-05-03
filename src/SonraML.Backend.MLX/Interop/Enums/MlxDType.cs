@@ -155,4 +155,44 @@ internal static partial class MlxDType
 
         throw new BackendOperationException("DType was invalid.");
     }
+
+    public static Type? GetType(DType dtype)
+    {
+        return dtype switch
+        {
+            DType.Bool => typeof(bool),
+            DType.UInt8 => typeof(byte),
+            DType.UInt16 => typeof(ushort),
+            DType.UInt32 => typeof(uint),
+            DType.UInt64 => typeof(ulong),
+            DType.Int8 => typeof(sbyte),
+            DType.Int16 => typeof(short),
+            DType.Int32 => typeof(int),
+            DType.Int64 => typeof(long),
+            DType.Float16 => typeof(Half),
+            DType.Float32 => typeof(float),
+            DType.Float64 => typeof(double),
+            _ => null,
+        };
+    }
+
+    public static Type GetTypeValid(DType dtype)
+    {
+        return dtype switch
+        {
+            DType.Bool => typeof(bool),
+            DType.UInt8 => typeof(byte),
+            DType.UInt16 => typeof(ushort),
+            DType.UInt32 => typeof(uint),
+            DType.UInt64 => typeof(ulong),
+            DType.Int8 => typeof(sbyte),
+            DType.Int16 => typeof(short),
+            DType.Int32 => typeof(int),
+            DType.Int64 => typeof(long),
+            DType.Float16 => typeof(Half),
+            DType.Float32 => typeof(float),
+            DType.Float64 => typeof(double),
+            _ => throw new ArgumentOutOfRangeException(nameof(dtype)),
+        };
+    }
 }
