@@ -1,6 +1,8 @@
+using SonraML.Core.Types;
+
 namespace SonraTest.Data;
 
-public class MnistDataLoader
+public class MnistDataLoader : DataLoader<MnistTrainingData>
 {
     private readonly MnistDataset dataset;
 
@@ -9,20 +11,11 @@ public class MnistDataLoader
         this.dataset = dataset;
     }
 
-    public Task<MnistTrainingData> GetData(int batchSize)
+    protected override Task<IEnumerable<MnistTrainingData>> Load(int amount)
     {
-        var tcs = new TaskCompletionSource<MnistTrainingData>();
-        Task.Run(() => GetData(tcs, batchSize));
+        var result = new List<MnistTrainingData>();
 
-        return tcs.Task;
-    }
-
-    private Task GetData(TaskCompletionSource<MnistTrainingData> tcs, int batchSize)
-    {
-        var inputs = new List<float[]>(batchSize);
-        var outputs = new List<float[]>(batchSize);
-
-        for (var i = 0; i < batchSize; i++)
+        for (var i = 0; i < amount; i++)
         {
             var data = dataset.GetNext();
             if (data is null)
@@ -30,14 +23,13 @@ public class MnistDataLoader
                 break;
             }
 
-            inputs.Add(data.Image.Select(im => im / 255.0f).ToArray());
+            var input = data.Image.Select(im => im / 255.0f).ToArray();
             var output = new float[10];
             output[data.Label] = 1.0f;
-            outputs.Add(output);
+            
+            result.Add(new(input, output));
         }
-
-        tcs.SetResult(new(inputs, outputs));
-
-        return Task.CompletedTask;
+        
+        return Task.FromResult<IEnumerable<MnistTrainingData>>(result);
     }
 }
