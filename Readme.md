@@ -1,4 +1,8 @@
-# SonraML - A Backend-Agnostic Machine Learning Framework for .NET
+# SonraML
+A Backend-Agnostic Machine Learning Framework for .NET
+
+---
+
 SonraML is a .NET machine learning framework with backend-agnostic tensors, scoped tensor lifetimes, neural-network modules, optimizers, safetensors support, and an MLX backend for Apple Silicon.
 
 Define your ML modules with fluent syntax:
