@@ -7,10 +7,11 @@ public class TestRunnerContext : ISonraRunnerContext
 {
     public TestRunnerContext(IServiceProvider serviceProvider)
     {
+        Console.WriteLine(Directory.GetCurrentDirectory());
         var dataset = new MnistDataset
         (
-            "/Users/emily/Development/SonraML/TestData/train-images.idx3-ubyte",
-            "/Users/emily/Development/SonraML/TestData/train-labels.idx1-ubyte"
+            "Assets/train-images.idx3-ubyte",
+            "Assets/train-labels.idx1-ubyte"
         );
         
         DataLoader = new(dataset);

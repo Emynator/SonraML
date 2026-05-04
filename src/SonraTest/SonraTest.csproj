@@ -15,4 +15,5 @@
       <ProjectReference Include="..\SonraML.Backend.MLX\SonraML.Backend.MLX.csproj" />
       <ProjectReference Include="..\SonraML.Core\SonraML.Core.csproj" />
     </ItemGroup>
+    
 </Project>
