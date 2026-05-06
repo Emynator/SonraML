@@ -23,11 +23,13 @@ public sealed class Sigmoid<T> : INNModule<T> where T : struct
         throw new NotImplementedException();
     }
 
-    public async Task Save(string filePath)
+    public Task Save(ITensorStore store)
     {
+        return Task.CompletedTask;
     }
 
-    public async Task Load(string filePath)
+    public Task Load(ITensorStore store)
     {
+        return Task.CompletedTask;
     }
 }

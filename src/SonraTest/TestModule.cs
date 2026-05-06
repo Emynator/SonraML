@@ -32,11 +32,13 @@ public class TestModule : INNModule<float>
         return sequential.Backward(gradOutput);
     }
 
-    public async Task Save(string filePath)
+    public Task Save(ITensorStore store)
     {
+        return sequential.Save(store);
     }
 
-    public async Task Load(string filePath)
+    public Task Load(ITensorStore store)
     {
+        return sequential.Load(store);
     }
 }

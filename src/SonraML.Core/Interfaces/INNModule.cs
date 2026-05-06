@@ -14,7 +14,7 @@ public interface INNModule<T> where T : struct
     
     public Tensor<T> Backward(Tensor<T> gradOutput);
 
-    public Task Save(string filePath);
+    public Task Save(ITensorStore store);
 
-    public Task Load(string filePath);
+    public Task Load(ITensorStore store);
 }

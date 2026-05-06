@@ -18,9 +18,9 @@ public abstract class NNContainer<T> : INNModule<T> where T : struct
 
     public abstract Tensor<T> Backward(Tensor<T> gradOutput);
 
-    public abstract Task Save(string filePath);
+    public abstract Task Save(ITensorStore store);
 
-    public abstract Task Load(string filePath);
+    public abstract Task Load(ITensorStore store);
 
     public abstract void AddModule(INNModule<T> module);
 }

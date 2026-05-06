@@ -33,9 +33,9 @@ public sealed class Linear<T> : INNModule<T> where T : struct
             name = "";
             canSave = false;
         }
-        
-        var w = gtf.FromArray(weightArray, weightShape).ConvertTo<T>();
-        weights = new(w, gtf.Zero<T>(weightShape), $"{name}_weights");
+
+        var w = gtf.FromArray(weightArray, weightShape, $"{name}_weights").ConvertTo<T>();
+        weights = new(w, gtf.Zero<T>(weightShape), w.Name);
 
         var biasesShape = new TensorShape([outputFeatures]);
         var biasesArray = new float[biasesShape.Size];
@@ -43,9 +43,9 @@ public sealed class Linear<T> : INNModule<T> where T : struct
         {
             biasesArray[i] = Random.Shared.NextSingle() * 10.0f - 5.0f;
         }
-        
-        var b = gtf.FromArray(biasesArray, biasesShape).ConvertTo<T>();
-        biases = new(b, gtf.Zero<T>(biasesShape), $"{name}_biases");
+
+        var b = gtf.FromArray(biasesArray, biasesShape, $"{name}_biases").ConvertTo<T>();
+        biases = new(b, gtf.Zero<T>(biasesShape), b.Name);
     }
 
     public IEnumerable<Parameter<T>> Parameters
@@ -81,19 +81,33 @@ public sealed class Linear<T> : INNModule<T> where T : struct
         return gradInput;
     }
 
-    public async Task Save(string filePath)
+    public async Task Save(ITensorStore store)
     {
         if (!canSave)
         {
             return;
         }
+
+        await store.AddTensors([weights.Value, biases.Value]);
     }
 
-    public async Task Load(string filePath)
+    public async Task Load(ITensorStore store)
     {
         if (!canSave)
         {
             return;
+        }
+
+        var w = await store.LoadTensor(weights.Name);
+        if (w is not null)
+        {
+            weights.Value.CopyFrom(w.AsTensor<T>());
+        }
+        
+        var b = await store.LoadTensor(biases.Name);
+        if (b is not null)
+        {
+            biases.Value.CopyFrom(b.AsTensor<T>());
         }
     }
 }

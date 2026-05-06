@@ -35,12 +35,14 @@ public sealed class Sequential<T> : NNContainer<T> where T : struct
         return result;
     }
 
-    public override async Task Save(string filePath)
+    public override Task Save(ITensorStore store)
     {
+        return Task.WhenAll(modules.Select(module => module.Save(store)));
     }
 
-    public override async Task Load(string filePath)
+    public override Task Load(ITensorStore store)
     {
+        return Task.WhenAll(modules.Select(module => module.Load(store)));
     }
 
     public override void AddModule(INNModule<T> module)
