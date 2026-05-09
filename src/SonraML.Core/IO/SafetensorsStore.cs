@@ -52,6 +52,7 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
     {
         await Task.Run(() => SaveFile(true));
         await file.DisposeAsync();
+        rwLock.Dispose();
     }
 
     public void Dispose()
@@ -59,27 +60,38 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
         DisposeAsync().AsTask().Wait();
     }
 
-    public Task<ICollection<string>> ListTensors()
+    public async Task<ICollection<string>> ListTensors()
     {
-        return Task.FromResult<ICollection<string>>(Header.Select(t => t.Key).ToList());
+        await rwLock.WaitAsync();
+        var result = Header.Select(t => t.Key).ToList();
+        rwLock.Release();
+
+        return result;
     }
 
-    public Task<bool> Contains(string key)
+    public async Task<bool> Contains(string key)
     {
-        return Task.FromResult(Header.ContainsKey(key));
+        await rwLock.WaitAsync();
+        var result = Header.ContainsKey(key);
+        rwLock.Release();
+
+        return result;
     }
 
-    public Task<bool> Contains(ICollection<string> keys)
+    public async Task<bool> Contains(ICollection<string> keys)
     {
+        await rwLock.WaitAsync();
         foreach (var key in keys)
         {
             if (!Header.ContainsKey(key))
             {
-                return Task.FromResult(false);
+                rwLock.Release();
+                return false;
             }
         }
+        rwLock.Release();
 
-        return Task.FromResult(true);
+        return true;
     }
 
     public async Task<ICollection<GenericTensor>> LoadTensors()
@@ -92,57 +104,91 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
 
     public async Task<ICollection<GenericTensor>> LoadTensors(ICollection<string> keys)
     {
-        var tasks = keys.Select(LoadTensor);
+        await rwLock.WaitAsync();
+        var tasks = keys.Select(k => LoadTensor(k, false));
         var result = await Task.WhenAll(tasks);
+        rwLock.Release();
 
         return result.Where(t => t is not null).Select(t => t!).ToList();
     }
 
     public Task<GenericTensor?> LoadTensor(string key)
     {
-        if (Header.TryGetValue(key, out var entry))
-        {
-            if (entry is SafetensorsDataEntry dataEntry)
-            {
-                return Task.FromResult<GenericTensor?>(dataEntry.Data);
-            }
-
-            if (entry is SafetensorsHeaderEntry headerEntry)
-            {
-                return Task.Run(() => ReadTensor(headerEntry, key));
-            }
-        }
-
-        return Task.FromResult<GenericTensor?>(null);
+        return LoadTensor(key, true);
     }
 
     public Task AddTensor(GenericTensor tensor)
     {
+        return AddTensor(tensor, true);
+    }
+
+    public async Task AddTensors(ICollection<GenericTensor> tensors)
+    {
+        await rwLock.WaitAsync();
+        var tasks = tensors.Select(t => AddTensor(t, false)).ToList();
+        await Task.WhenAll(tasks);
+        rwLock.Release();
+    }
+
+    public async Task RemoveTensor(string key)
+    {
+        await rwLock.WaitAsync();
+        Header.Remove(key);
+        rwLock.Release();
+    }
+
+    public Task Persist()
+    {
+        return Task.Run(() => SaveFile(false));
+    }
+
+    public async Task<GenericTensor?> LoadTensor(string key, bool isSingle)
+    {
+        GenericTensor? result = null;
+
+        if (isSingle)
+        {
+            await rwLock.WaitAsync();
+        }
+
+        if (Header.TryGetValue(key, out var entry))
+        {
+            if (entry is SafetensorsDataEntry dataEntry)
+            {
+                result = dataEntry.Data;
+            }
+
+            if (entry is SafetensorsHeaderEntry headerEntry)
+            {
+                result = await Task.Run(() => ReadTensor(headerEntry, key));
+            }
+        }
+
+        if (isSingle)
+        {
+            rwLock.Release();
+        }
+
+        return result;
+    }
+
+    private async Task AddTensor(GenericTensor tensor, bool isSingle)
+    {
+        if (isSingle)
+        {
+            await rwLock.WaitAsync();
+        }
+
         var value = new SafetensorsDataEntry(tensor);
         if (!Header.TryAdd(tensor.Name, value))
         {
             Header[tensor.Name] = value;
         }
 
-        return Task.CompletedTask;
-    }
-
-    public async Task AddTensors(ICollection<GenericTensor> tensors)
-    {
-        var tasks = tensors.Select(AddTensor).ToList();
-        await Task.WhenAll(tasks);
-    }
-
-    public Task RemoveTensor(string key)
-    {
-        Header.Remove(key);
-
-        return Task.CompletedTask;
-    }
-
-    public Task Persist()
-    {
-        return Task.Run(() => SaveFile(false));
+        if (isSingle)
+        {
+            rwLock.Release();
+        }
     }
 
     private void ReadHeader()
@@ -292,11 +338,13 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
 
     private void SaveFile(bool isDisposing)
     {
+        rwLock.Wait();
         var unsaved = Header
             .Where(entry => entry.Value is SafetensorsDataEntry)
             .ToList();
         if (unsaved.Count == 0)
         {
+            rwLock.Release();
             return;
         }
 
@@ -340,11 +388,13 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
 
             if (!SafetensorsHelper.TypeToDtype.TryGetValue(type, out var dtype))
             {
+                rwLock.Release();
                 throw new ArgumentException($"Safetensors don't support type '{type.Name}'.");
             }
 
             if (!SafetensorsHelper.DtypeToSize.TryGetValue(dtype, out var typeSize))
             {
+                rwLock.Release();
                 throw new ArgumentException($"Safetensors don't support dtype '{dtype}'.");
             }
 
@@ -357,7 +407,7 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
             newEntriesToWrite.Add(dataEntry.Data);
         }
 
-        var jsonString = JsonSerializer.Serialize(header);
+        var jsonString = JsonSerializer.Serialize(newHeader);
         var headerBytes = Encoding.UTF8.GetBytes(jsonString);
         var headerSize = (long)headerBytes.Length;
 
@@ -518,6 +568,7 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
                 continue;
             }
 
+            rwLock.Release();
             throw new ArgumentException($"Safetensors don't support type '{type.Name}'.");
         }
 
@@ -527,5 +578,7 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
         {
             ReadHeader();
         }
+        
+        rwLock.Release();
     }
 }
