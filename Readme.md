@@ -7,7 +7,7 @@ SonraML is a .NET machine learning framework with backend-agnostic tensors, scop
 
 Define your ML modules with fluent syntax:
 ```C#
-var sequential = new(serviceProvider);
+var sequential = factory.CreateSequential<float>();
 sequential
     .AddLinear(imageSize, 16)
     .AddReLU()

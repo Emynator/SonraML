@@ -1,6 +1,7 @@
 using SonraML.Core.Extensions;
 using SonraML.Core.Interfaces;
 using SonraML.Core.NN;
+using SonraML.Core.Services;
 using SonraML.Core.Types;
 
 namespace SonraTest;
@@ -9,9 +10,9 @@ public class TestModule : INNModule<float>
 {
     private readonly Sequential<float> sequential;
     
-    public TestModule(IServiceProvider serviceProvider, int imageSize)
+    public TestModule(ModuleFactory factory, int imageSize)
     {
-        sequential = new(serviceProvider);
+        sequential = factory.CreateSequential<float>();
         sequential
             .AddLinear(imageSize, 16)
             .AddReLU()

@@ -1,11 +1,12 @@
 using SonraML.Core.Interfaces;
+using SonraML.Core.Services;
 using SonraTest.Data;
 
 namespace SonraTest;
 
 public class TestRunnerContext : ISonraRunnerContext
 {
-    public TestRunnerContext(IServiceProvider serviceProvider)
+    public TestRunnerContext(ModuleFactory factory)
     {
         Console.WriteLine(Directory.GetCurrentDirectory());
         var dataset = new MnistDataset
@@ -15,7 +16,7 @@ public class TestRunnerContext : ISonraRunnerContext
         );
         
         DataLoader = new(dataset);
-        Module = new(serviceProvider, dataset.ImageSize);
+        Module = new(factory, dataset.ImageSize);
     }
     
     public MnistDataLoader DataLoader { get; }
