@@ -50,6 +50,7 @@ SonraML is built around the .NET application model. Tensors are created through 
 **`Tensor<T>` implements `IEnumerable<T>`:** Use LINQ for inspection and CPU-side processing. Enumeration reads from backend memory without forcing an intermediate managed array unless you create one.
 - **Let SonraML manage your training runs:** Implement and configure a `SonraRunner` and SonraML will execute training runs for you. Each epoch is executed in its own DI scope that is disposed after execution is finished.
 - **Let SonraML load your training data:** `DataLoader<T>` handles batching and background prefetching. You just provide the data source.
+- **Save and load `Tensor<T>` with `ITensorStore`:** use the existing implementations for reading from and writing to `.safetensors` files or implement your own storage connectors.
 
 ## Building
 Building and using SonraML requires MLX-C libraries. Check out [the GitHub repo](https://github.com/ml-explore/mlx-c) for build instructions. Copy the resulting .dylibs to `src/SonraML.Backend.MLX/NativeLibs` and it should work. `SonraTest` requires the MNIST dataset in `src/SonraTest/Assets`.
