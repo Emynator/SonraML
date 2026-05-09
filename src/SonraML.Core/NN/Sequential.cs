@@ -1,16 +1,17 @@
 using SonraML.Core.Interfaces;
+using SonraML.Core.Services;
 using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
 public sealed class Sequential<T> : NNContainer<T> where T : struct
 {
-    private readonly List<INNModule<T>> modules = [];
+    private readonly List<NNModule<T>> modules = [];
 
-    public Sequential(IServiceProvider serviceProvider) : base(serviceProvider)
+    public Sequential(ModuleFactory factory) : base(factory)
     {
     }
-    
+
     public override IEnumerable<Parameter<T>> Parameters => modules.SelectMany(module => module.Parameters);
 
     public override Tensor<T> Forward(Tensor<T> input)
@@ -20,7 +21,7 @@ public sealed class Sequential<T> : NNContainer<T> where T : struct
         {
             result = module.Forward(result);
         }
-        
+
         return result;
     }
 
@@ -31,7 +32,7 @@ public sealed class Sequential<T> : NNContainer<T> where T : struct
         {
             result = modules[i].Backward(result);
         }
-        
+
         return result;
     }
 
@@ -45,7 +46,7 @@ public sealed class Sequential<T> : NNContainer<T> where T : struct
         return Task.WhenAll(modules.Select(module => module.Load(store)));
     }
 
-    public override void AddModule(INNModule<T> module)
+    public override void AddModule(NNModule<T> module)
     {
         modules.Add(module);
     }

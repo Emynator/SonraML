@@ -10,7 +10,7 @@ public static class ModuleFactoryExtensions
 {
     public static Sequential<T> CreateSequential<T>(this ModuleFactory factory) where T : struct
     {
-        return new Sequential<T>(factory.ServiceProvider);
+        return new Sequential<T>(factory);
     }
 
     public static Linear<T> CreateLinear<T>

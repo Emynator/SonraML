@@ -1,6 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SonraML.Core.Interfaces;
 using SonraML.Core.NN;
 
 namespace SonraML.Core.Extensions;
@@ -9,16 +6,14 @@ public static class ContainerExtensions
 {
     public static NNContainer<T> AddReLU<T>(this NNContainer<T> container) where T : struct
     {
-        var tf = container.ServiceProvider.GetRequiredService<IGlobalTensorFactory>();
-        
-        container.AddModule(new ReLU<T>(tf));
+        container.AddModule(container.Factory.CreateReLU<T>());
 
         return container;
     }
 
     public static NNContainer<T> AddSigmoid<T>(this NNContainer<T> container) where T : struct
     {
-        container.AddModule(new Sigmoid<T>());
+        container.AddModule(container.Factory.CreateSigmoid<T>());
         
         return container;
     }
@@ -31,10 +26,7 @@ public static class ContainerExtensions
         string? name = null
         ) where T : struct
     {
-        var gtf = container.ServiceProvider.GetRequiredService<IGlobalTensorFactory>();
-        var logger = container.ServiceProvider.GetRequiredService<ILogger<Linear<T>>>();
-        
-        container.AddModule(new Linear<T>(logger, gtf, inputFeatures, outputFeatures, name));
+        container.AddModule(container.Factory.CreateLinear<T>(inputFeatures, outputFeatures, name));
         
         return container;
     }

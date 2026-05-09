@@ -5,7 +5,7 @@ using SonraML.Core.Types;
 
 namespace SonraML.Core.NN;
 
-public sealed class Linear<T> : INNModule<T> where T : struct
+public sealed class Linear<T> : NNModule<T> where T : struct
 {
     private readonly bool canSave = true;
     private readonly Parameter<T> weights;
@@ -48,7 +48,7 @@ public sealed class Linear<T> : INNModule<T> where T : struct
         biases = new(b, gtf.Zero<T>(biasesShape), b.Name);
     }
 
-    public IEnumerable<Parameter<T>> Parameters
+    public override IEnumerable<Parameter<T>> Parameters
     {
         get
         {
@@ -57,14 +57,14 @@ public sealed class Linear<T> : INNModule<T> where T : struct
         }
     }
 
-    public Tensor<T> Forward(Tensor<T> input)
+    public override Tensor<T> Forward(Tensor<T> input)
     {
         cachedInput = input;
 
         return input.Fma(weights.Value, biases.Value);
     }
 
-    public Tensor<T> Backward(Tensor<T> gradOutput)
+    public override Tensor<T> Backward(Tensor<T> gradOutput)
     {
         if (cachedInput is null)
         {
@@ -81,7 +81,7 @@ public sealed class Linear<T> : INNModule<T> where T : struct
         return gradInput;
     }
 
-    public async Task Save(ITensorStore store)
+    public override async Task Save(ITensorStore store)
     {
         if (!canSave)
         {
@@ -91,7 +91,7 @@ public sealed class Linear<T> : INNModule<T> where T : struct
         await store.AddTensors([weights.Value, biases.Value]);
     }
 
-    public async Task Load(ITensorStore store)
+    public override async Task Load(ITensorStore store)
     {
         if (!canSave)
         {
