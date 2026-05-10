@@ -45,7 +45,7 @@ SonraML is built around the .NET application model. Tensors are created through 
 - **Statically typed and type-safe tensors:** because a `Tensor<float>` should not be confused with a `Tensor<bool>`.
 - **Modular architecture:** Extend features with custom `NNModule<T>` implementations from other sources.
 - **DI scoped tensor lifetimes:** Inject an `IScopedTensorFactory` or `IGlobalTensorFactory` via dependency injection, create tensors and don't worry about native memory management.
-**Lazy evaluation for compute graphs:** Computation is deferred until data is accessed, copied, printed, or explicitly evaluated with `EnsureCompute()`.
+- **Lazy evaluation for compute graphs:** Computation is deferred until data is accessed, copied, printed, or explicitly evaluated with `EnsureCompute()`.
 - **LINQ up your data:** If .NET can IEnumerable it, SonraML can train on it. EF Core data providers anyone?
 **`Tensor<T>` implements `IEnumerable<T>`:** Use LINQ for inspection and CPU-side processing. Enumeration reads from backend memory without forcing an intermediate managed array unless you create one.
 - **Let SonraML manage your training runs:** Implement and configure a `SonraRunner` and SonraML will execute training runs for you. Each epoch is executed in its own DI scope that is disposed after execution is finished.
