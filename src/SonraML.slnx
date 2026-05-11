@@ -1,4 +1,9 @@
 <Solution>
+  <Project Path="../samples/01-tensor-basics/TensorBasics.Sample.csproj" />
+  <Project Path="../samples/02-mnist-classifier/MnistClassifier.Sample.csproj" />
+  <Project Path="../samples/03-save-load-safetensors/SaveLoadSafetensors.Sample.csproj" />
+  <Project Path="../samples/04-custom-module-xor/CustomModuleXor.Sample.csproj" />
+  <Project Path="../samples/05-dotnet-data-pipeline/DotNetDataPipeline.Sample.csproj" />
   <Project Path="SonraML.Backend.MLX/SonraML.Backend.MLX.csproj" />
   <Project Path="SonraML.Core/SonraML.Core.csproj" />
   <Project Path="SonraTest/SonraTest.csproj" />
