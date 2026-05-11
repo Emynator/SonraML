@@ -57,5 +57,8 @@ Building and using SonraML requires MLX-C libraries. Check out [the GitHub repo]
 
 SonraML was tested on macOS with MLX-C. It *might* work on Linux and Windows since MLX *does* have a CUDA backend, but I wasn't able to verify that. Contributions on that front are more than welcome!
 
+## Samples
+The [`samples`](samples/README.md) folder contains runnable examples for tensor basics, MNIST training, safetensors persistence, custom modules, and .NET-native data loading.
+
 ## Contributing
 SonraML is still early and experimental, so just reach out!

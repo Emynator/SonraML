@@ -19,15 +19,14 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
     {
         this.tf = tf;
         this.filePath = filePath;
-        var exists = false;
         if (File.Exists(filePath))
         {
-            exists = true;
             file = File.Open(filePath, FileMode.Open);
         }
         else if (Directory.Exists(Path.GetDirectoryName(filePath)))
         {
             file = File.Create(filePath);
+            header = new();
         }
         else
         {
@@ -193,6 +192,13 @@ public class SafetensorsStore : ITensorStore, IAsyncDisposable
 
     private void ReadHeader()
     {
+        if (file.Length == 0)
+        {
+            header = new();
+            dataOffset = 0;
+            return;
+        }
+
         file.Seek(0, SeekOrigin.Begin);
         using var binaryReader = new BinaryReader(file, Encoding.UTF8, true);
         var buffer = binaryReader.ReadBytes(8);
