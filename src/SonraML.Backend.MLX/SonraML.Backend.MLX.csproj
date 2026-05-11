@@ -8,15 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="NativeLibs/libmlxc.dylib">
+        <None Include="NativeLibs/libmlxc.dylib" Condition="Exists('NativeLibs/libmlxc.dylib')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>%(Filename)%(Extension)</TargetPath>
         </None>
-        <None Include="NativeLibs/libmlx.dylib">
+        <None Include="NativeLibs/libmlx.dylib" Condition="Exists('NativeLibs/libmlx.dylib')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>%(Filename)%(Extension)</TargetPath>
         </None>
-        <None Include="NativeLibs/libjaccl.dylib">
+        <None Include="NativeLibs/libjaccl.dylib" Condition="Exists('NativeLibs/libjaccl.dylib')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>%(Filename)%(Extension)</TargetPath>
         </None>
